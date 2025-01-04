@@ -28,118 +28,117 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.btnConnect = new System.Windows.Forms.Button();
-            this.comboBoxCOMPorts = new System.Windows.Forms.ComboBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.buttonCommunicate = new System.Windows.Forms.Button();
-            this.textBoxLog = new System.Windows.Forms.TextBox();
-            this.buttonGetZoneNames = new System.Windows.Forms.Button();
-            this.listBoxZoneNames = new System.Windows.Forms.ListBox();
-            this.buttonSetZoneNames = new System.Windows.Forms.Button();
-            this.SuspendLayout();
+            btnConnect = new Button();
+            comboBoxCOMPorts = new ComboBox();
+            label2 = new Label();
+            buttonCommunicate1Hz = new Button();
+            textBoxLog = new TextBox();
+            buttonGetZoneNames = new Button();
+            listBoxZoneNames = new ListBox();
+            buttonUpdateZoneNames = new Button();
+            SuspendLayout();
             // 
             // btnConnect
             // 
-            this.btnConnect.Location = new System.Drawing.Point(232, 17);
-            this.btnConnect.Name = "btnConnect";
-            this.btnConnect.Size = new System.Drawing.Size(75, 23);
-            this.btnConnect.TabIndex = 0;
-            this.btnConnect.Text = "Connect";
-            this.btnConnect.UseVisualStyleBackColor = true;
-            this.btnConnect.Click += new System.EventHandler(this.buttonConnect_Click);
+            btnConnect.Location = new Point(232, 17);
+            btnConnect.Name = "btnConnect";
+            btnConnect.Size = new Size(75, 23);
+            btnConnect.TabIndex = 0;
+            btnConnect.Text = "Connect";
+            btnConnect.UseVisualStyleBackColor = true;
+            btnConnect.Click += buttonConnect_Click;
             // 
             // comboBoxCOMPorts
             // 
-            this.comboBoxCOMPorts.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxCOMPorts.FormattingEnabled = true;
-            this.comboBoxCOMPorts.Location = new System.Drawing.Point(12, 17);
-            this.comboBoxCOMPorts.Name = "comboBoxCOMPorts";
-            this.comboBoxCOMPorts.Size = new System.Drawing.Size(121, 23);
-            this.comboBoxCOMPorts.TabIndex = 2;
+            comboBoxCOMPorts.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBoxCOMPorts.FormattingEnabled = true;
+            comboBoxCOMPorts.Location = new Point(12, 17);
+            comboBoxCOMPorts.Name = "comboBoxCOMPorts";
+            comboBoxCOMPorts.Size = new Size(121, 23);
+            comboBoxCOMPorts.TabIndex = 2;
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(139, 21);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(87, 15);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Baud rate: 9600";
+            label2.AutoSize = true;
+            label2.Location = new Point(139, 21);
+            label2.Name = "label2";
+            label2.Size = new Size(87, 15);
+            label2.TabIndex = 3;
+            label2.Text = "Baud rate: 9600";
             // 
-            // buttonCommunicate
+            // buttonCommunicate1Hz
             // 
-            this.buttonCommunicate.Enabled = false;
-            this.buttonCommunicate.Location = new System.Drawing.Point(322, 17);
-            this.buttonCommunicate.Name = "buttonCommunicate";
-            this.buttonCommunicate.Size = new System.Drawing.Size(105, 23);
-            this.buttonCommunicate.TabIndex = 4;
-            this.buttonCommunicate.Text = "Communicate";
-            this.buttonCommunicate.UseVisualStyleBackColor = true;
-            this.buttonCommunicate.Click += new System.EventHandler(this.buttonCommunicate_Click);
+            buttonCommunicate1Hz.Enabled = false;
+            buttonCommunicate1Hz.Location = new Point(322, 17);
+            buttonCommunicate1Hz.Name = "buttonCommunicate1Hz";
+            buttonCommunicate1Hz.Size = new Size(137, 23);
+            buttonCommunicate1Hz.TabIndex = 4;
+            buttonCommunicate1Hz.Text = "Communicate 1Hz";
+            buttonCommunicate1Hz.UseVisualStyleBackColor = true;
+            buttonCommunicate1Hz.Click += buttonCommunicate1Hz_Click;
             // 
             // textBoxLog
             // 
-            this.textBoxLog.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.textBoxLog.Location = new System.Drawing.Point(12, 56);
-            this.textBoxLog.Multiline = true;
-            this.textBoxLog.Name = "textBoxLog";
-            this.textBoxLog.ReadOnly = true;
-            this.textBoxLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBoxLog.Size = new System.Drawing.Size(776, 382);
-            this.textBoxLog.TabIndex = 5;
+            textBoxLog.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            textBoxLog.Location = new Point(12, 56);
+            textBoxLog.Multiline = true;
+            textBoxLog.Name = "textBoxLog";
+            textBoxLog.ReadOnly = true;
+            textBoxLog.ScrollBars = ScrollBars.Both;
+            textBoxLog.Size = new Size(776, 382);
+            textBoxLog.TabIndex = 5;
             // 
             // buttonGetZoneNames
             // 
-            this.buttonGetZoneNames.Enabled = false;
-            this.buttonGetZoneNames.Location = new System.Drawing.Point(12, 457);
-            this.buttonGetZoneNames.Name = "buttonGetZoneNames";
-            this.buttonGetZoneNames.Size = new System.Drawing.Size(214, 23);
-            this.buttonGetZoneNames.TabIndex = 6;
-            this.buttonGetZoneNames.Text = "Get Zone Names";
-            this.buttonGetZoneNames.UseVisualStyleBackColor = true;
-            this.buttonGetZoneNames.Click += new System.EventHandler(this.buttonGetZoneNames_Click);
+            buttonGetZoneNames.Enabled = false;
+            buttonGetZoneNames.Location = new Point(12, 457);
+            buttonGetZoneNames.Name = "buttonGetZoneNames";
+            buttonGetZoneNames.Size = new Size(214, 23);
+            buttonGetZoneNames.TabIndex = 6;
+            buttonGetZoneNames.Text = "Get Zone Names";
+            buttonGetZoneNames.UseVisualStyleBackColor = true;
+            buttonGetZoneNames.Click += buttonGetZoneNames_Click;
             // 
             // listBoxZoneNames
             // 
-            this.listBoxZoneNames.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.listBoxZoneNames.FormattingEnabled = true;
-            this.listBoxZoneNames.ItemHeight = 15;
-            this.listBoxZoneNames.Location = new System.Drawing.Point(12, 486);
-            this.listBoxZoneNames.Name = "listBoxZoneNames";
-            this.listBoxZoneNames.ScrollAlwaysVisible = true;
-            this.listBoxZoneNames.Size = new System.Drawing.Size(776, 139);
-            this.listBoxZoneNames.TabIndex = 7;
+            listBoxZoneNames.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            listBoxZoneNames.FormattingEnabled = true;
+            listBoxZoneNames.ItemHeight = 15;
+            listBoxZoneNames.Location = new Point(12, 486);
+            listBoxZoneNames.Name = "listBoxZoneNames";
+            listBoxZoneNames.ScrollAlwaysVisible = true;
+            listBoxZoneNames.Size = new Size(776, 139);
+            listBoxZoneNames.TabIndex = 7;
             // 
-            // buttonSetZoneNames
+            // buttonUpdateZoneNames
             // 
-            this.buttonSetZoneNames.Enabled = false;
-            this.buttonSetZoneNames.Location = new System.Drawing.Point(12, 631);
-            this.buttonSetZoneNames.Name = "buttonSetZoneNames";
-            this.buttonSetZoneNames.Size = new System.Drawing.Size(214, 23);
-            this.buttonSetZoneNames.TabIndex = 8;
-            this.buttonSetZoneNames.Text = "Set Zone Names";
-            this.buttonSetZoneNames.UseVisualStyleBackColor = true;
-            this.buttonSetZoneNames.Click += new System.EventHandler(this.buttonSetZoneNames_Click);
+            buttonUpdateZoneNames.Enabled = false;
+            buttonUpdateZoneNames.Location = new Point(12, 631);
+            buttonUpdateZoneNames.Name = "buttonUpdateZoneNames";
+            buttonUpdateZoneNames.Size = new Size(214, 23);
+            buttonUpdateZoneNames.TabIndex = 8;
+            buttonUpdateZoneNames.Text = "Update Zone Names";
+            buttonUpdateZoneNames.UseVisualStyleBackColor = true;
+            buttonUpdateZoneNames.Click += buttonUpdateZoneNames_Click;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 732);
-            this.Controls.Add(this.buttonSetZoneNames);
-            this.Controls.Add(this.listBoxZoneNames);
-            this.Controls.Add(this.buttonGetZoneNames);
-            this.Controls.Add(this.textBoxLog);
-            this.Controls.Add(this.buttonCommunicate);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.comboBoxCOMPorts);
-            this.Controls.Add(this.btnConnect);
-            this.MaximizeBox = false;
-            this.Name = "Form1";
-            this.Text = "Serial Connection Demo";
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(800, 732);
+            Controls.Add(buttonUpdateZoneNames);
+            Controls.Add(listBoxZoneNames);
+            Controls.Add(buttonGetZoneNames);
+            Controls.Add(textBoxLog);
+            Controls.Add(buttonCommunicate1Hz);
+            Controls.Add(label2);
+            Controls.Add(comboBoxCOMPorts);
+            Controls.Add(btnConnect);
+            MaximizeBox = false;
+            Name = "Form1";
+            Text = "Serial Connection Demo";
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -147,10 +146,10 @@
         private Button btnConnect;
         private ComboBox comboBoxCOMPorts;
         private Label label2;
-        private Button buttonCommunicate;
+        private Button buttonCommunicate1Hz;
         private TextBox textBoxLog;
         private Button buttonGetZoneNames;
         private ListBox listBoxZoneNames;
-        private Button buttonSetZoneNames;
+        private Button buttonUpdateZoneNames;
     }
 }

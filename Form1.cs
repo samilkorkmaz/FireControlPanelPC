@@ -1,4 +1,6 @@
-﻿using System.IO.Ports;
+﻿using System;
+using System.IO.Ports;
+using System.Text;
 using System.Windows.Forms;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -9,17 +11,18 @@ namespace WinFormsSerial
         private SerialPort? serialPort;
         private CancellationTokenSource? cts;
         private string stopText = "Stop";
-        private string communicateText = "Communicate";
-        private const string isThereFireAlarm = "#";
-        private const string isThereZoneLineFault = "$";
-        private const string isThereZControlPanelFault = "%";
-        private const string resetControlPanel = "&";
-        private const string silenceBuzzer = "'";
-        private string[] periodicCommandsOrder = { isThereFireAlarm, isThereZoneLineFault, isThereFireAlarm, isThereZControlPanelFault };
+        private string communicateText = "Communicate 1Hz";
+        private const byte isThereFireAlarm = 35;
+        private const byte isThereZoneLineFault = 36;
+        private const byte isThereControlPanelFault = 37;
+        private const byte resetControlPanel = 38;
+        private const byte silenceBuzzer = 39;
+        private const byte GET_ZONE_NAMES_COMMAND = 14;
+        private const byte SET_ZONE_NAMES_COMMAND = 13;
+        private const int NB_OF_ZONES = 8;
+        private const int ZONE_NAME_LENGTH = 16;
+        private byte[] periodicCommandsOrder = { isThereFireAlarm, isThereZoneLineFault, isThereFireAlarm, isThereControlPanelFault };
         private TextBox editBoxZoneName = new TextBox();
-        //private const string GET_ZONE_NAMES_COMMAND = "\x0D\xF4";  // 13, 244 in hex
-        private const string GET_ZONE_NAMES_COMMAND = "\x0E";  // 14 in hex
-        private const string SET_ZONE_NAMES_COMMAND = "\x0D";  // 13 in hex
 
         public Form1()
         {
@@ -46,7 +49,10 @@ namespace WinFormsSerial
         {
             if (e.KeyChar == (char)Keys.Return)
             {
-                CommitEdit();
+                if (editBoxZoneName.Text.Length <= 16)
+                {
+                    CommitEdit();
+                }
                 e.Handled = true;
             }
             else if (e.KeyChar == (char)Keys.Escape)
@@ -54,11 +60,16 @@ namespace WinFormsSerial
                 editBoxZoneName.Visible = false;
                 e.Handled = true;
             }
+            else if (editBoxZoneName.Text.Length >= ZONE_NAME_LENGTH && e.KeyChar != (char)Keys.Back)
+            {
+                // Reject input if already at 16 chars (but allow backspace)
+                e.Handled = true;
+            }
         }
 
         private void CommitEdit()
         {
-            if (editBoxZoneName.Visible)
+            if (editBoxZoneName.Visible && editBoxZoneName.Text.Length <= 16)
             {
                 int index = (int)editBoxZoneName.Tag;
                 listBoxZoneNames.Items[index] = editBoxZoneName.Text;
@@ -117,17 +128,18 @@ namespace WinFormsSerial
         private async void buttonConnect_Click(object sender, EventArgs e)
         {
             btnConnect.Enabled = false;
-            buttonCommunicate.Enabled = false;
+            buttonCommunicate1Hz.Enabled = false;
             try
             {
                 if (serialPort != null && serialPort.IsOpen)
                 {
                     serialPort.Close();
-                    btnConnect.Text = "Connect";
                     comboBoxCOMPorts.Enabled = true;
-                    buttonCommunicate.Enabled = false;
-                    buttonCommunicate.Text = communicateText;
+                    buttonCommunicate1Hz.Enabled = false;
+                    buttonCommunicate1Hz.Text = communicateText;
+                    buttonGetZoneNames.Enabled = false;
                     appendToLog("Disconnected");
+                    btnConnect.Text = "Connect";
                     return;
                 }
 
@@ -168,9 +180,8 @@ namespace WinFormsSerial
 
                 btnConnect.Text = "Disconnect";
                 comboBoxCOMPorts.Enabled = false;
-                buttonCommunicate.Enabled = true;
+                buttonCommunicate1Hz.Enabled = true;
                 buttonGetZoneNames.Enabled = true;
-                buttonSetZoneNames.Enabled = true;
                 appendToLog("Connected");
             }
             catch (Exception ex)
@@ -179,7 +190,7 @@ namespace WinFormsSerial
                 btnConnect.Enabled = true;
                 comboBoxCOMPorts.Enabled = true;
                 buttonGetZoneNames.Enabled = false;
-                buttonSetZoneNames.Enabled = false;
+                buttonUpdateZoneNames.Enabled = false;
                 appendToLog("Connection failed");
 
                 // Clean up if connection failed
@@ -201,7 +212,7 @@ namespace WinFormsSerial
             }
         }
 
-        private void SendCommandAndProcessResponse(string command)
+        private void SendCommandAndProcessResponse(byte[] command)
         {
             if (serialPort == null)
                 throw new InvalidOperationException("Serial port is not initialized");
@@ -212,25 +223,36 @@ namespace WinFormsSerial
             try
             {
                 // Send command
-                serialPort.Write(command);
+                serialPort.Write(command, 0, command.Length);
                 appendToLog($"Command '{command}' sent.");
 
                 // Wait for response
                 Thread.Sleep(500);
 
-                byte[] buffer = new byte[1];
-                int bytesRead = serialPort.Read(buffer, 0, 1);
+                byte[] bufferRead = new byte[NB_OF_ZONES * ZONE_NAME_LENGTH];
+                int bytesToRead;
+                int bytesRead;
+
+                if (command[0] == GET_ZONE_NAMES_COMMAND)
+                {
+                    bytesToRead = NB_OF_ZONES * ZONE_NAME_LENGTH;
+                }
+                else
+                {
+                    bytesToRead = 1;
+                }
+
+                bytesRead = serialPort.Read(bufferRead, 0, bytesToRead);
 
                 if (bytesRead > 0)
                 {
-                    byte responseByte = buffer[0];
-                    ProcessResponse(command, responseByte);
+                    ProcessResponse(command, bufferRead);
                 }
                 else
                 {
                     appendToLog("No response from the control panel.");
                 }
-            }            
+            }
             catch (Exception ex)
             {
                 string codes = string.Join(", ", command.Select(c => (int)c));
@@ -238,40 +260,73 @@ namespace WinFormsSerial
             }
         }
 
-        private void ProcessResponse(string command, byte response)
+        private static string getZoneNumbers(byte response)
         {
-            switch (command)
+            string zones = "";
+            if ((response & 0b00000001) != 0) zones += "1 ";
+            if ((response & 0b00000010) != 0) zones += "2 ";
+            if ((response & 0b00000100) != 0) zones += "3 ";
+            if ((response & 0b00001000) != 0) zones += "4 ";
+            if ((response & 0b00010000) != 0) zones += "5 ";
+            if ((response & 0b00100000) != 0) zones += "6 ";
+            if ((response & 0b01000000) != 0) zones += "7 ";
+            if ((response & 0b10000000) != 0) zones += "8 ";
+            return zones;
+        }
+
+        private void parseZoneNames(byte[] buffer)
+        {
+            const int expectedZoneNameLength = NB_OF_ZONES * ZONE_NAME_LENGTH;
+            if (buffer.Length != expectedZoneNameLength)
+            {
+                throw new ArgumentOutOfRangeException("Zone name byte array size " + buffer.Length + " not " + expectedZoneNameLength);
+            }
+            listBoxZoneNames.Items.Clear();
+            for (int i = 0; i < NB_OF_ZONES; i++)
+            {
+                int iStart = i * ZONE_NAME_LENGTH;
+                byte[] subset = new byte[ZONE_NAME_LENGTH];
+                Array.Copy(buffer, iStart, subset, 0, ZONE_NAME_LENGTH);
+                string zoneName = System.Text.Encoding.ASCII.GetString(subset);
+                listBoxZoneNames.Items.Add(zoneName);
+            }
+        }
+
+        private void ProcessResponse(byte[] command, byte[] bufferRead)
+        {
+            byte firstByteRead = bufferRead[0];
+            switch (command[0])
             {
                 case isThereFireAlarm:
-                    if (response == 0b00000000) appendToLog("No fire alarm.");
-                    else appendToLog($"Fire alarm at zone: {response}");
+                    if (firstByteRead == 0b00000000) appendToLog("No fire alarm.");
+                    else appendToLog($"Fire alarm at zones: {getZoneNumbers(firstByteRead)}");
                     break;
                 case isThereZoneLineFault:
-                    if (response == 0b00000000) appendToLog("No zone line fault.");
-                    else appendToLog($"Zone Line Fault at zone: {response}");
+                    if (firstByteRead == 0b00000000) appendToLog("No zone line fault.");
+                    else appendToLog($"Zone line fault at zones: {getZoneNumbers(firstByteRead)}");
                     break;
-                case isThereZControlPanelFault:
+                case isThereControlPanelFault:
                     appendToLog("control panel fault conditions:");
-                    if ((response & 0b00000001) != 0) appendToLog("Batarya yok");
-                    if ((response & 0b00000010) != 0) appendToLog("Batarya zayıf");
-                    if ((response & 0b00000100) != 0) appendToLog("Şebeke yok");
-                    if ((response & 0b00001000) != 0) appendToLog("Şarj zayıf");
-                    if ((response & 0b00010000) != 0) appendToLog("Siren Arıza");
-                    if ((response & 0b00100000) != 0) appendToLog("Çıkış arıza");
-                    if ((response & 0b01000000) != 0) appendToLog("Toprak arıza");
-                    if (response == 0b00000000) appendToLog("No control panel fault.");
-                    break;
-                case resetControlPanel:
-                    appendToLog("TODO: Control panel reset command acknowledged.");
-                    break;
-                case silenceBuzzer:
-                    appendToLog("TODO: Buzzer silence command acknowledged.");
+                    if ((firstByteRead & 0b00000001) != 0) appendToLog("Batarya yok");
+                    if ((firstByteRead & 0b00000010) != 0) appendToLog("Batarya zayıf");
+                    if ((firstByteRead & 0b00000100) != 0) appendToLog("Şebeke yok");
+                    if ((firstByteRead & 0b00001000) != 0) appendToLog("Şarj zayıf");
+                    if ((firstByteRead & 0b00010000) != 0) appendToLog("Siren Arıza");
+                    if ((firstByteRead & 0b00100000) != 0) appendToLog("Çıkış arıza");
+                    if ((firstByteRead & 0b01000000) != 0) appendToLog("Toprak arıza");
+                    if (firstByteRead == 0b00000000) appendToLog("No control panel fault.");
                     break;
                 case GET_ZONE_NAMES_COMMAND:
-                    appendToLog("TODO: getZoneNamesCommand acknowledged.");
+                    parseZoneNames(bufferRead);
                     break;
                 case SET_ZONE_NAMES_COMMAND:
-                    appendToLog("TODO: setZoneNamesCommand acknowledged.");
+                    appendToLog("Set zone names command sent.");
+                    break;
+                case resetControlPanel:
+                    appendToLog("Control panel reset command sent.");
+                    break;
+                case silenceBuzzer:
+                    appendToLog("Buzzer silence command sent.");
                     break;
                 default:
                     appendToLog("ERROR: Unknown command: " + command);
@@ -290,50 +345,73 @@ namespace WinFormsSerial
             base.OnFormClosing(e);
         }
 
-        private void buttonCommunicate_Click(object sender, EventArgs e)
+        private void buttonCommunicate1Hz_Click(object sender, EventArgs e)
         {
             try
             {
-                if (buttonCommunicate.Text == communicateText)
+                if (buttonCommunicate1Hz.Text == communicateText)
                 {
                     btnConnect.Enabled = false;
-                    buttonCommunicate.Text = stopText;
-                    foreach (string command in periodicCommandsOrder)
+                    buttonCommunicate1Hz.Text = stopText;
+                    foreach (byte command in periodicCommandsOrder)
                     {
-                        SendCommandAndProcessResponse(command);
+                        SendCommandAndProcessResponse(new byte[] { command });
                     }
                 }
                 else
                 {
                     btnConnect.Enabled = true;
-                    buttonCommunicate.Text = communicateText;
+                    buttonCommunicate1Hz.Text = communicateText;
                 }
             }
             finally
             {
                 btnConnect.Enabled = true;
-                buttonCommunicate.Text = communicateText;
+                buttonCommunicate1Hz.Text = communicateText;
             }
         }
 
         private void buttonGetZoneNames_Click(object sender, EventArgs e)
         {
             appendToLog("GetZoneNames clicked");
-
-            SendCommandAndProcessResponse(GET_ZONE_NAMES_COMMAND);
-
-
-            const int nZones = 8;
-            for (int i = 0; i < nZones; i++)
+            SendCommandAndProcessResponse(new byte[] { GET_ZONE_NAMES_COMMAND });
+            /*for (int i = 0; i < NB_OF_ZONES; i++)
             {
-                listBoxZoneNames.Items.Add("zone " + (i+1));
-            }
+                listBoxZoneNames.Items.Add("zone " + i);
+            }*/
+            buttonUpdateZoneNames.Enabled = listBoxZoneNames.Items.Count != 0;
         }
 
-        private void buttonSetZoneNames_Click(object sender, EventArgs e)
+        private void buttonUpdateZoneNames_Click(object sender, EventArgs e)
         {
-            appendToLog("SetZoneNames clicked");
-            SendCommandAndProcessResponse(SET_ZONE_NAMES_COMMAND);
+            appendToLog("UpdateZoneNames clicked");
+            if (listBoxZoneNames.Items.Count == 0)
+            {
+                appendToLog("listBoxZoneNames.Items.Count == 0, you must first get zone names from panel!");
+                return;
+            }
+            const int commandSize = 1 + NB_OF_ZONES * (1 + ZONE_NAME_LENGTH) + 1;
+            byte[] command = new byte[commandSize];
+            command[0] = SET_ZONE_NAMES_COMMAND;
+            for (int iZone = 0; iZone < NB_OF_ZONES; iZone++)
+            {
+                string? zoneName = listBoxZoneNames.Items[iZone].ToString();
+                if (zoneName == null)
+                {
+                    throw new ArgumentNullException("Zone " + iZone + " name null!");
+                }
+                else
+                {
+                    zoneName = zoneName.PadRight(ZONE_NAME_LENGTH, ' ');
+                }
+                byte[] nameBytes = System.Text.Encoding.ASCII.GetBytes(zoneName);
+                int iNameStart = 2 + iZone * (1 + ZONE_NAME_LENGTH);
+                command[iNameStart - 1] = (byte)(200 + iZone + 1);
+                Array.Copy(nameBytes, 0, command, iNameStart, ZONE_NAME_LENGTH);
+            }
+            command[commandSize - 1] = 27;
+            //appendToLog(System.Text.Encoding.ASCII.GetString(command));
+            SendCommandAndProcessResponse(command);
         }
     }
 }
