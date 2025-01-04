@@ -1,2 +1,2 @@
 # SerialCommWinForm
- SerialCommWinForm
+Yangın paneli
