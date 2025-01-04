@@ -1,4 +1,5 @@
 ﻿using System.IO.Ports;
+using System.Windows.Forms;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace WinFormsSerial
@@ -15,11 +16,74 @@ namespace WinFormsSerial
         private const string resetControlPanel = "&";
         private const string silenceBuzzer = "'";
         private string[] periodicCommandsOrder = { isThereFireAlarm, isThereZoneLineFault, isThereFireAlarm, isThereZControlPanelFault };
+        private TextBox editBoxZoneName = new TextBox();
 
         public Form1()
         {
             InitializeComponent();
             PopulateCOMPorts();
+            ConfigureListBoxZoneNames();
+        }
+
+        private void ConfigureListBoxZoneNames()
+        {
+            editBoxZoneName.Visible = false;
+            editBoxZoneName.LostFocus += EditBoxZoneName_LostFocus;
+            editBoxZoneName.KeyPress += EditBoxZoneName_KeyPress;
+            this.Controls.Add(editBoxZoneName);
+            listBoxZoneNames.MouseDoubleClick += ListBoxZoneNames_MouseDoubleClick;
+        }
+
+        private void EditBoxZoneName_LostFocus(object? sender, EventArgs e)
+        {
+            CommitEdit();
+        }
+
+        private void EditBoxZoneName_KeyPress(object? sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Return)
+            {
+                CommitEdit();
+                e.Handled = true;
+            }
+            else if (e.KeyChar == (char)Keys.Escape)
+            {
+                editBoxZoneName.Visible = false;
+                e.Handled = true;
+            }
+        }
+
+        private void CommitEdit()
+        {
+            if (editBoxZoneName.Visible)
+            {
+                int index = (int)editBoxZoneName.Tag;
+                listBoxZoneNames.Items[index] = editBoxZoneName.Text;
+                editBoxZoneName.Visible = false;
+            }
+        }
+
+        private void ListBoxZoneNames_MouseDoubleClick(object? sender, MouseEventArgs e)
+        {
+            int iClicked = listBoxZoneNames.IndexFromPoint(e.Location);
+            if (iClicked != ListBox.NoMatches)
+            {
+                // Position the TextBox at the clicked item
+                Rectangle rect = listBoxZoneNames.GetItemRectangle(iClicked);
+                editBoxZoneName.Bounds = new Rectangle(
+                    listBoxZoneNames.Left + rect.Left,
+                    listBoxZoneNames.Top + rect.Top,
+                    rect.Width,
+                    rect.Height);
+
+                // Set the TextBox text and show it
+                editBoxZoneName.Text = listBoxZoneNames.Items[iClicked].ToString();
+                editBoxZoneName.Tag = iClicked;  // Store the index for later
+                editBoxZoneName.Visible = true;
+                editBoxZoneName.BringToFront();  // Make sure it's visible above the ListBox
+                editBoxZoneName.Focus();
+                editBoxZoneName.SelectAll();
+            }
         }
 
         private void PopulateCOMPorts()
@@ -102,6 +166,8 @@ namespace WinFormsSerial
                 btnConnect.Text = "Disconnect";
                 comboBoxCOMPorts.Enabled = false;
                 buttonCommunicate.Enabled = true;
+                buttonGetZoneNames.Enabled = true;
+                buttonSetZoneNames.Enabled = true;
                 appendToLog("Connected");
             }
             catch (Exception ex)
@@ -109,6 +175,8 @@ namespace WinFormsSerial
                 MessageBox.Show($"Error: {ex.Message}");
                 btnConnect.Enabled = true;
                 comboBoxCOMPorts.Enabled = true;
+                buttonGetZoneNames.Enabled = false;
+                buttonSetZoneNames.Enabled = false;
                 appendToLog("Connection failed");
 
                 // Clean up if connection failed
@@ -234,7 +302,23 @@ namespace WinFormsSerial
             finally
             {
                 btnConnect.Enabled = true;
+                buttonCommunicate.Text = communicateText;
             }
+        }
+
+        private void buttonGetZoneNames_Click(object sender, EventArgs e)
+        {
+            appendToLog("GetZoneNames clicked");
+            const int nZones = 8;
+            for (int i = 0; i < nZones; i++)
+            {
+                listBoxZoneNames.Items.Add("zone " + (i+1));
+            }
+        }
+
+        private void buttonSetZoneNames_Click(object sender, EventArgs e)
+        {
+            appendToLog("SetZoneNames clicked");
         }
     }
 }

@@ -33,6 +33,9 @@
             this.label2 = new System.Windows.Forms.Label();
             this.buttonCommunicate = new System.Windows.Forms.Button();
             this.textBoxLog = new System.Windows.Forms.TextBox();
+            this.buttonGetZoneNames = new System.Windows.Forms.Button();
+            this.listBoxZoneNames = new System.Windows.Forms.ListBox();
+            this.buttonSetZoneNames = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnConnect
@@ -85,11 +88,47 @@
             this.textBoxLog.Size = new System.Drawing.Size(776, 382);
             this.textBoxLog.TabIndex = 5;
             // 
+            // buttonGetZoneNames
+            // 
+            this.buttonGetZoneNames.Enabled = false;
+            this.buttonGetZoneNames.Location = new System.Drawing.Point(12, 457);
+            this.buttonGetZoneNames.Name = "buttonGetZoneNames";
+            this.buttonGetZoneNames.Size = new System.Drawing.Size(214, 23);
+            this.buttonGetZoneNames.TabIndex = 6;
+            this.buttonGetZoneNames.Text = "Get Zone Names";
+            this.buttonGetZoneNames.UseVisualStyleBackColor = true;
+            this.buttonGetZoneNames.Click += new System.EventHandler(this.buttonGetZoneNames_Click);
+            // 
+            // listBoxZoneNames
+            // 
+            this.listBoxZoneNames.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.listBoxZoneNames.FormattingEnabled = true;
+            this.listBoxZoneNames.ItemHeight = 15;
+            this.listBoxZoneNames.Location = new System.Drawing.Point(12, 486);
+            this.listBoxZoneNames.Name = "listBoxZoneNames";
+            this.listBoxZoneNames.ScrollAlwaysVisible = true;
+            this.listBoxZoneNames.Size = new System.Drawing.Size(776, 139);
+            this.listBoxZoneNames.TabIndex = 7;
+            // 
+            // buttonSetZoneNames
+            // 
+            this.buttonSetZoneNames.Enabled = false;
+            this.buttonSetZoneNames.Location = new System.Drawing.Point(12, 631);
+            this.buttonSetZoneNames.Name = "buttonSetZoneNames";
+            this.buttonSetZoneNames.Size = new System.Drawing.Size(214, 23);
+            this.buttonSetZoneNames.TabIndex = 8;
+            this.buttonSetZoneNames.Text = "Set Zone Names";
+            this.buttonSetZoneNames.UseVisualStyleBackColor = true;
+            this.buttonSetZoneNames.Click += new System.EventHandler(this.buttonSetZoneNames_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(800, 732);
+            this.Controls.Add(this.buttonSetZoneNames);
+            this.Controls.Add(this.listBoxZoneNames);
+            this.Controls.Add(this.buttonGetZoneNames);
             this.Controls.Add(this.textBoxLog);
             this.Controls.Add(this.buttonCommunicate);
             this.Controls.Add(this.label2);
@@ -110,5 +149,8 @@
         private Label label2;
         private Button buttonCommunicate;
         private TextBox textBoxLog;
+        private Button buttonGetZoneNames;
+        private ListBox listBoxZoneNames;
+        private Button buttonSetZoneNames;
     }
 }
