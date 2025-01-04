@@ -17,6 +17,9 @@ namespace WinFormsSerial
         private const string silenceBuzzer = "'";
         private string[] periodicCommandsOrder = { isThereFireAlarm, isThereZoneLineFault, isThereFireAlarm, isThereZControlPanelFault };
         private TextBox editBoxZoneName = new TextBox();
+        //private const string GET_ZONE_NAMES_COMMAND = "\x0D\xF4";  // 13, 244 in hex
+        private const string GET_ZONE_NAMES_COMMAND = "\x0E";  // 14 in hex
+        private const string SET_ZONE_NAMES_COMMAND = "\x0D";  // 13 in hex
 
         public Form1()
         {
@@ -230,7 +233,8 @@ namespace WinFormsSerial
             }            
             catch (Exception ex)
             {
-                appendToLog("Error while communicating! command: " + command + " Exception: " + ex.Message);
+                string codes = string.Join(", ", command.Select(c => (int)c));
+                appendToLog("Error while communicating! command ASCII code: " + codes + " Exception: " + ex.Message);
             }
         }
 
@@ -262,6 +266,12 @@ namespace WinFormsSerial
                     break;
                 case silenceBuzzer:
                     appendToLog("TODO: Buzzer silence command acknowledged.");
+                    break;
+                case GET_ZONE_NAMES_COMMAND:
+                    appendToLog("TODO: getZoneNamesCommand acknowledged.");
+                    break;
+                case SET_ZONE_NAMES_COMMAND:
+                    appendToLog("TODO: setZoneNamesCommand acknowledged.");
                     break;
                 default:
                     appendToLog("ERROR: Unknown command: " + command);
@@ -309,6 +319,10 @@ namespace WinFormsSerial
         private void buttonGetZoneNames_Click(object sender, EventArgs e)
         {
             appendToLog("GetZoneNames clicked");
+
+            SendCommandAndProcessResponse(GET_ZONE_NAMES_COMMAND);
+
+
             const int nZones = 8;
             for (int i = 0; i < nZones; i++)
             {
@@ -319,6 +333,7 @@ namespace WinFormsSerial
         private void buttonSetZoneNames_Click(object sender, EventArgs e)
         {
             appendToLog("SetZoneNames clicked");
+            SendCommandAndProcessResponse(SET_ZONE_NAMES_COMMAND);
         }
     }
 }
