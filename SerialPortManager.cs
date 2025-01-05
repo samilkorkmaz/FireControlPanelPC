@@ -24,6 +24,7 @@ namespace WinFormsSerial
 
         public async Task ConnectAsync(string portName, double timeoutSeconds = 3)
         {
+            _logCallback($"Connecting to {portName}...");
             if (_serialPort?.IsOpen == true)
                 throw new InvalidOperationException("Port is already open");
 

@@ -42,7 +42,7 @@
             if (response == 0)
                 _logCallback("No fire alarm.");
             else
-                _logCallback($"Fire alarm at zones: {GetZoneNumbers(response)}");
+                _logCallback($"Fire alarm in zones: {GetZoneNumbers(response)}");
         }
 
         private void ProcessZoneLineFault(byte response)
@@ -50,7 +50,7 @@
             if (response == 0)
                 _logCallback("No zone line fault.");
             else
-                _logCallback($"Zone line fault at zones: {GetZoneNumbers(response)}");
+                _logCallback($"Zone line fault in zones: {GetZoneNumbers(response)}");
         }
 
         private void ProcessControlPanelFault(byte response)
@@ -68,9 +68,10 @@
                 { 0b00000010, "Batarya zayıf" },
                 { 0b00000100, "Şebeke yok" },
                 { 0b00001000, "Şarj zayıf" },
-                { 0b00010000, "Siren Arıza" },
-                { 0b00100000, "Çıkış arıza" },
-                { 0b01000000, "Toprak arıza" }
+                { 0b00010000, "Siren1 Arıza" },
+                { 0b00100000, "Siren2 Arıza" },
+                { 0b01000000, "Çıkış arıza" },
+                { 0b10000000, "Toprak arıza" }
             };
 
             foreach (var fault in faults)
@@ -83,7 +84,7 @@
         private static string GetZoneNumbers(byte response)
         {
             var zones = new List<string>();
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < Constants.NB_OF_ZONES; i++)
             {
                 if ((response & (1 << i)) != 0)
                     zones.Add((i + 1).ToString());

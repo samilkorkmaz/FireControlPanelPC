@@ -1,4 +1,5 @@
-﻿using System.IO.Ports;
+﻿using System;
+using System.IO.Ports;
 using System.Text;
 
 namespace WinFormsSerial
@@ -188,12 +189,17 @@ namespace WinFormsSerial
 
         private async void buttonGetZoneNames_Click(object sender, EventArgs e)
         {
+            LogMessage("Get zone names");
+            /*for (int i = 0; i < Constants.NB_OF_ZONES; i++)
+            {
+                listBoxZoneNames.Items.Add("zone " + i);
+                buttonUpdateZoneNames.Enabled = true;
+            }*/
             buttonGetZoneNames.Enabled = false;
             try
             {
                 await Task.Run(() => // Use async/await pattern to prevent button clicks in rapid succession
                 {
-                    LogMessage("Get zone names");
                     var expectedBytesLength = Constants.NB_OF_ZONES * Constants.ZONE_NAME_LENGTH;
                     var (responseBytes, readBytesLength) = _serialPortManager.SendCommand(
                         new[] { Constants.GET_ZONE_NAMES_COMMAND },
@@ -259,6 +265,7 @@ namespace WinFormsSerial
                 if (responseFirstByte == expectedResponse)
                 {
                     LogMessage($"Zone names update command sent successfully. Response: {responseFirstByte}");
+                    _zoneNameEditor.ClearEditHistory(); // Clear edit highlight from edited lines
                 }
                 else
                 {
