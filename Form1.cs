@@ -4,7 +4,7 @@ namespace WinFormsSerial
 {
     public partial class Form1 : Form
     {
-        private readonly SerialPortManager _serialPort;
+        private readonly SerialPortManager _serialPortManager;
         private readonly FaultAlarmCommandProcessor _faultAlarmCommandProcessor;
         private readonly ZoneNameEditor _zoneNameEditor;
         private bool _isCommunicating;
@@ -15,7 +15,7 @@ namespace WinFormsSerial
         {
             InitializeComponent();
 
-            _serialPort = new SerialPortManager(LogMessage);
+            _serialPortManager = new SerialPortManager(LogMessage);
             _faultAlarmCommandProcessor = new FaultAlarmCommandProcessor(LogMessage);
             _zoneNameEditor = new ZoneNameEditor(listBoxZoneNames);
 
@@ -55,7 +55,7 @@ namespace WinFormsSerial
         private void PopulateCOMPorts()
         {
             comboBoxCOMPorts.Items.Clear();
-            string[] ports = _serialPort.GetAvailablePortNames();
+            string[] ports = _serialPortManager.GetAvailablePortNames();
 
             comboBoxCOMPorts.Items.AddRange(ports);
             btnConnect.Enabled = ports.Length > 0;
@@ -72,9 +72,9 @@ namespace WinFormsSerial
 
             try
             {
-                if (_serialPort.IsConnected)
+                if (_serialPortManager.IsConnected)
                 {
-                    _serialPort.Disconnect();
+                    _serialPortManager.Disconnect();
                     UpdateUIForDisconnected();
                     return;
                 }
@@ -85,11 +85,12 @@ namespace WinFormsSerial
                     return;
                 }
 
-                await _serialPort.ConnectAsync(comboBoxCOMPorts.SelectedItem.ToString()!);
+                await _serialPortManager.ConnectAsync(comboBoxCOMPorts.SelectedItem.ToString()!);
                 UpdateUIForConnected();
             }
             catch (Exception ex)
             {
+                LogMessage(ex.Message);
                 MessageBox.Show($"Connection error: {ex.Message}");
                 UpdateUIForDisconnected();
             }
@@ -134,7 +135,7 @@ namespace WinFormsSerial
 
                     try
                     {
-                        while (!_communicationCts.Token.IsCancellationRequested && _serialPort.IsConnected)
+                        while (!_communicationCts.Token.IsCancellationRequested && _serialPortManager.IsConnected)
                         {
                             foreach (byte command in Constants.PERIODIC_COMMANDS_ORDER)
                             {
@@ -142,7 +143,7 @@ namespace WinFormsSerial
 
                                 try
                                 {
-                                    var (response, bytesRead) = _serialPort.SendCommand(new[] { command });
+                                    var (response, bytesRead) = _serialPortManager.SendCommand(new[] { command });
                                     if (bytesRead > 0)
                                     {
                                         _faultAlarmCommandProcessor.ProcessResponse(command, response);
@@ -185,32 +186,43 @@ namespace WinFormsSerial
             }
         }
 
-        private void buttonGetZoneNames_Click(object sender, EventArgs e)
+        private async void buttonGetZoneNames_Click(object sender, EventArgs e)
         {
+            buttonGetZoneNames.Enabled = false;
             try
             {
-                LogMessage("Get zone names");
-                var expectedLength = Constants.NB_OF_ZONES * Constants.ZONE_NAME_LENGTH;
-                var (response, bytesRead) = _serialPort.SendCommand(
-                    new[] { Constants.GET_ZONE_NAMES_COMMAND },
-                    expectedLength
-                );
+                await Task.Run(() => // Use async/await pattern to prevent button clicks in rapid succession
+                {
+                    LogMessage("Get zone names");
+                    var expectedBytesLength = Constants.NB_OF_ZONES * Constants.ZONE_NAME_LENGTH;
+                    var (responseBytes, readBytesLength) = _serialPortManager.SendCommand(
+                        new[] { Constants.GET_ZONE_NAMES_COMMAND },
+                        expectedBytesLength
+                    );
 
-                if (bytesRead == expectedLength)
-                {
-                    ParseAndDisplayZoneNames(response);
-                    buttonUpdateZoneNames.Enabled = true;
-                    LogMessage("Zone names obtained successfully.");
-                }
-                else
-                {
-                    LogMessage($"Received unexpected number of bytes: {bytesRead}");
-                }
+                    if (readBytesLength == expectedBytesLength)
+                    {
+                        this.Invoke(() =>
+                        {
+                            ParseAndDisplayZoneNames(responseBytes);
+                            LogMessage("Zone names obtained successfully.");
+                            buttonUpdateZoneNames.Enabled = true;
+                        });
+                    }
+                    else
+                    {
+                        LogMessage($"Expected number of bytes {expectedBytesLength} is different from received {readBytesLength}");
+                    }
+                });
             }
             catch (Exception ex)
             {
                 LogMessage($"Error for getting zone names command {Constants.GET_ZONE_NAMES_COMMAND}: {ex.Message}");
                 buttonUpdateZoneNames.Enabled = false;
+            }
+            finally
+            {
+                buttonGetZoneNames.Enabled = true;
             }
         }
 
@@ -241,7 +253,7 @@ namespace WinFormsSerial
                 }
 
                 byte[] command = BuildZoneNamesUpdateCommand();
-                var (response, _) = _serialPort.SendCommand(command);
+                var (response, _) = _serialPortManager.SendCommand(command);
                 var responseFirstByte = response[0];
                 const byte expectedResponse = 245;
                 if (responseFirstByte == expectedResponse)
@@ -284,7 +296,7 @@ namespace WinFormsSerial
             _communicationCts?.Cancel();
             _communicationCts?.Dispose();
             _isCommunicating = false;
-            _serialPort.Dispose();
+            _serialPortManager.Dispose();
             base.OnFormClosing(e);
         }
     }

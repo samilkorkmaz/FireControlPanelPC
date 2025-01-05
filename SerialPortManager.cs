@@ -15,6 +15,11 @@ namespace WinFormsSerial
             _logCallback = logCallback;
         }
 
+        public string getPortName()
+        {
+            return _serialPort != null ? _serialPort.PortName : "No port!";
+        }
+
         public string[] GetAvailablePortNames() => SerialPort.GetPortNames();
 
         public async Task ConnectAsync(string portName, double timeoutSeconds = 3)
@@ -44,11 +49,11 @@ namespace WinFormsSerial
                 }
                 catch (Exception) when (_cts.Token.IsCancellationRequested)
                 {
-                    throw new TimeoutException($"Connection attempt timed out after {timeoutSeconds} seconds");
+                    throw new TimeoutException($"ERROR: Connection attempt to {_serialPort.PortName} timed out after {timeoutSeconds} seconds.");
                 }
             }, _cts.Token);
 
-            _logCallback("Connected");
+            _logCallback($"Connected to {_serialPort.PortName}");
         }
 
         public void Disconnect()
@@ -73,7 +78,7 @@ namespace WinFormsSerial
             catch (Exception ex)
             {
                 //_logCallback($"Write error: {ex.Message}");
-                throw new IOException($"Failed to write to serial port: {ex.Message}", ex);
+                throw new IOException($"Failed to write to serial port {_serialPort.PortName}: {ex.Message}", ex);
             }
 
             Thread.Sleep(500); // Wait for response
@@ -87,7 +92,7 @@ namespace WinFormsSerial
             catch (Exception ex)
             {
                 //_logCallback($"Read error: {ex.Message}");
-                throw new IOException($"Failed to read from serial port: {ex.Message}", ex);
+                throw new IOException($"Failed to read from serial port {_serialPort.PortName}: {ex.Message}", ex);
             }
         }
 
