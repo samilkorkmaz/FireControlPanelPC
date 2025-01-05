@@ -5,7 +5,7 @@ namespace WinFormsSerial
     public partial class Form1 : Form
     {
         private readonly SerialPortManager _serialPort;
-        private readonly CommandProcessor _commandProcessor;
+        private readonly FaultAlarmCommandProcessor _faultAlarmCommandProcessor;
         private readonly ZoneNameEditor _zoneNameEditor;
         private bool _isCommunicating;
         private const string COMMUNICATE_TEXT = "Communicate 1Hz";
@@ -16,12 +16,21 @@ namespace WinFormsSerial
             InitializeComponent();
 
             _serialPort = new SerialPortManager(LogMessage);
-            _commandProcessor = new CommandProcessor(LogMessage);
+            _faultAlarmCommandProcessor = new FaultAlarmCommandProcessor(LogMessage);
             _zoneNameEditor = new ZoneNameEditor(listBoxZoneNames);
 
             Controls.Add(_zoneNameEditor.EditBoxControl);
             InitializeUI();
             PopulateCOMPorts();
+            // Add build date/time to form title
+            Text = $"Serial Connection Demo - Built: {GetBuildDateTime():yyyy-MM-dd HH:mm:ss}";
+        }
+
+        private static DateTime GetBuildDateTime()
+        {
+            string exePath = Application.ExecutablePath;
+            FileInfo fileInfo = new FileInfo(exePath);
+            return fileInfo.LastWriteTime;
         }
 
         private void InitializeUI()
@@ -136,7 +145,7 @@ namespace WinFormsSerial
                                     var (response, bytesRead) = _serialPort.SendCommand(new[] { command });
                                     if (bytesRead > 0)
                                     {
-                                        _commandProcessor.ProcessResponse(command, response);
+                                        _faultAlarmCommandProcessor.ProcessResponse(command, response);
                                     }
                                 }
                                 catch (Exception ex)
@@ -233,7 +242,16 @@ namespace WinFormsSerial
 
                 byte[] command = BuildZoneNamesUpdateCommand();
                 var (response, _) = _serialPort.SendCommand(command);
-                LogMessage("Zone names update command sent successfully.");
+                var responseFirstByte = response[0];
+                const byte expectedResponse = 245;
+                if (responseFirstByte == expectedResponse)
+                {
+                    LogMessage($"Zone names update command sent successfully. Response: {responseFirstByte}");
+                }
+                else
+                {
+                    LogMessage($"Error: Zone names update expectedResponse was {expectedResponse}, got {responseFirstByte}");
+                }
             }
             catch (Exception ex)
             {

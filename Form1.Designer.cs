@@ -42,7 +42,7 @@
             // 
             btnConnect.Location = new Point(232, 17);
             btnConnect.Name = "btnConnect";
-            btnConnect.Size = new Size(75, 23);
+            btnConnect.Size = new Size(93, 23);
             btnConnect.TabIndex = 0;
             btnConnect.Text = "Connect";
             btnConnect.UseVisualStyleBackColor = true;
@@ -69,7 +69,7 @@
             // buttonCommunicate1Hz
             // 
             buttonCommunicate1Hz.Enabled = false;
-            buttonCommunicate1Hz.Location = new Point(322, 17);
+            buttonCommunicate1Hz.Location = new Point(336, 17);
             buttonCommunicate1Hz.Name = "buttonCommunicate1Hz";
             buttonCommunicate1Hz.Size = new Size(137, 23);
             buttonCommunicate1Hz.TabIndex = 4;

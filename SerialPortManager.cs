@@ -68,19 +68,26 @@ namespace WinFormsSerial
             try
             {
                 _serialPort.Write(command, 0, command.Length);
-                _logCallback($"Command sent: {BitConverter.ToString(command)}");
+                _logCallback($"Command sent: {string.Join(", ", command)}");
+            }
+            catch (Exception ex)
+            {
+                //_logCallback($"Write error: {ex.Message}");
+                throw new IOException($"Failed to write to serial port: {ex.Message}", ex);
+            }
 
-                Thread.Sleep(500); // Wait for response
+            Thread.Sleep(500); // Wait for response
 
+            try
+            {
                 byte[] response = new byte[expectedResponseLength];
                 int bytesRead = _serialPort.Read(response, 0, expectedResponseLength);
-
                 return (response, bytesRead);
             }
             catch (Exception ex)
             {
-                //_logCallback($"Communication error: {ex.Message}");
-                throw;
+                //_logCallback($"Read error: {ex.Message}");
+                throw new IOException($"Failed to read from serial port: {ex.Message}", ex);
             }
         }
 

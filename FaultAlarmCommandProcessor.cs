@@ -1,15 +1,15 @@
 ﻿namespace WinFormsSerial
 {
-    public class CommandProcessor
+    public class FaultAlarmCommandProcessor
     {
         private readonly Action<string> _logCallback;
 
-        public CommandProcessor(Action<string> logCallback)
+        public FaultAlarmCommandProcessor(Action<string> logCallback)
         {
             _logCallback = logCallback;
         }
 
-        public void ProcessResponse(byte command, byte[] response)
+        public void ProcessResponse(byte faultAlarmCommand, byte[] response)
         {
             if (response.Length == 0)
             {
@@ -19,7 +19,7 @@
 
             byte firstByte = response[0];
 
-            switch (command)
+            switch (faultAlarmCommand)
             {
                 case Constants.IS_THERE_FIRE_ALARM:
                     ProcessFireAlarm(firstByte);
@@ -30,7 +30,10 @@
                 case Constants.IS_THERE_CONTROL_PANEL_FAULT:
                     ProcessControlPanelFault(firstByte);
                     break;
-                    // ... other cases
+                default:
+                    _logCallback($"Unknown fault/alarm command {faultAlarmCommand}");
+                    break;
+                    
             }
         }
 
