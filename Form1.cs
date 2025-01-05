@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IO.Ports;
+using System.Text;
 
 namespace WinFormsSerial
 {
@@ -58,7 +59,7 @@ namespace WinFormsSerial
             string[] ports = _serialPortManager.GetAvailablePortNames();
 
             comboBoxCOMPorts.Items.AddRange(ports);
-            btnConnect.Enabled = ports.Length > 0;
+            buttonConnect.Enabled = ports.Length > 0;
 
             if (ports.Length > 0)
                 comboBoxCOMPorts.SelectedIndex = 0;
@@ -68,7 +69,7 @@ namespace WinFormsSerial
 
         private async void buttonConnect_Click(object sender, EventArgs e)
         {
-            btnConnect.Enabled = false;
+            buttonConnect.Enabled = false;
 
             try
             {
@@ -91,18 +92,17 @@ namespace WinFormsSerial
             catch (Exception ex)
             {
                 LogMessage(ex.Message);
-                MessageBox.Show($"Connection error: {ex.Message}");
                 UpdateUIForDisconnected();
             }
             finally
             {
-                btnConnect.Enabled = true;
+                buttonConnect.Enabled = true;
             }
         }
 
         private void UpdateUIForConnected()
         {
-            btnConnect.Text = "Disconnect";
+            buttonConnect.Text = "Disconnect";
             comboBoxCOMPorts.Enabled = false;
             buttonCommunicate1Hz.Enabled = true;
             buttonGetZoneNames.Enabled = true;
@@ -110,7 +110,7 @@ namespace WinFormsSerial
 
         private void UpdateUIForDisconnected()
         {
-            btnConnect.Text = "Connect";
+            buttonConnect.Text = "Connect";
             comboBoxCOMPorts.Enabled = true;
             buttonCommunicate1Hz.Enabled = false;
             buttonGetZoneNames.Enabled = false;
@@ -130,7 +130,7 @@ namespace WinFormsSerial
                     LogMessage("Start communicating at 1Hz...");
                     _isCommunicating = true;
                     _communicationCts = new CancellationTokenSource();
-                    btnConnect.Enabled = false;
+                    buttonConnect.Enabled = false;
                     buttonCommunicate1Hz.Text = STOP_TEXT;
 
                     try
@@ -180,7 +180,7 @@ namespace WinFormsSerial
             }
             finally
             {
-                btnConnect.Enabled = true;
+                buttonConnect.Enabled = true;
                 buttonCommunicate1Hz.Text = COMMUNICATE_TEXT;
                 _isCommunicating = false;
             }
@@ -298,6 +298,79 @@ namespace WinFormsSerial
             _isCommunicating = false;
             _serialPortManager.Dispose();
             base.OnFormClosing(e);
+        }
+
+        private void buttonDetectPort_Click(object sender, EventArgs e)
+        {
+            string[] availablePorts = SerialPort.GetPortNames();
+            LogMessage($"Checking if fire control panel is connected by sending command { Constants.IS_THERE_FIRE_ALARM } to {availablePorts.Length} availabale ports...");
+            buttonDetectPort.Enabled = false;
+            buttonConnect.Enabled = false;
+            string detectedPort = "";
+
+            foreach (string port in availablePorts)
+            {
+                LogMessage($"Checking {port}...");
+
+                try
+                {
+                    using (SerialPort testPort = new SerialPort(port))
+                    {
+                        testPort.BaudRate = 9600;    // Match your device settings
+                        testPort.DataBits = 8;
+                        testPort.Parity = Parity.None;
+                        testPort.StopBits = StopBits.One;
+                        testPort.ReadTimeout = 300;   // Short timeout for quick scanning
+                        testPort.WriteTimeout = 300;
+
+                        testPort.Open();
+
+                        // Clear any existing data
+                        testPort.DiscardInBuffer();
+                        testPort.DiscardOutBuffer();
+
+                        // Send the "are you there?" command
+                        testPort.Write(new byte[] { Constants.IS_THERE_FIRE_ALARM }, 0, 1);
+
+                        // Read response
+                        byte[] response = new byte[1];
+                        int bytesRead = testPort.Read(response, 0, 1);
+                        testPort.Close();
+
+                        if (bytesRead == 1)
+                        {
+                            detectedPort = port;
+                            break;
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // Port is either in use or not the correct one
+                    continue;
+                }
+            }
+            if (string.IsNullOrEmpty(detectedPort))
+            {
+                LogMessage($"No fire control panel detected!");
+            }
+            else
+            {
+                LogMessage($"Fire control panel at {detectedPort}");
+                int index = comboBoxCOMPorts.FindString(detectedPort);
+                if (index != -1)
+                {
+                    comboBoxCOMPorts.SelectedIndex = index;
+                }
+            }
+            buttonDetectPort.Enabled = true;
+            buttonConnect.Enabled = true;
+
+            /*int i = comboBoxCOMPorts.FindString("COM4");
+            if (i != -1)
+            {
+                comboBoxCOMPorts.SelectedIndex = i;
+            }*/
         }
     }
 }

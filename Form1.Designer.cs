@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            btnConnect = new Button();
+            buttonConnect = new Button();
             comboBoxCOMPorts = new ComboBox();
             label2 = new Label();
             buttonCommunicate1Hz = new Button();
@@ -36,23 +36,24 @@
             buttonGetZoneNames = new Button();
             listBoxZoneNames = new ListBox();
             buttonUpdateZoneNames = new Button();
+            buttonDetectPort = new Button();
             SuspendLayout();
             // 
-            // btnConnect
+            // buttonConnect
             // 
-            btnConnect.Location = new Point(232, 17);
-            btnConnect.Name = "btnConnect";
-            btnConnect.Size = new Size(93, 23);
-            btnConnect.TabIndex = 0;
-            btnConnect.Text = "Connect";
-            btnConnect.UseVisualStyleBackColor = true;
-            btnConnect.Click += buttonConnect_Click;
+            buttonConnect.Location = new Point(341, 16);
+            buttonConnect.Name = "buttonConnect";
+            buttonConnect.Size = new Size(93, 23);
+            buttonConnect.TabIndex = 0;
+            buttonConnect.Text = "Connect";
+            buttonConnect.UseVisualStyleBackColor = true;
+            buttonConnect.Click += buttonConnect_Click;
             // 
             // comboBoxCOMPorts
             // 
             comboBoxCOMPorts.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxCOMPorts.FormattingEnabled = true;
-            comboBoxCOMPorts.Location = new Point(12, 17);
+            comboBoxCOMPorts.Location = new Point(121, 16);
             comboBoxCOMPorts.Name = "comboBoxCOMPorts";
             comboBoxCOMPorts.Size = new Size(121, 23);
             comboBoxCOMPorts.TabIndex = 2;
@@ -60,7 +61,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(139, 21);
+            label2.Location = new Point(248, 20);
             label2.Name = "label2";
             label2.Size = new Size(87, 15);
             label2.TabIndex = 3;
@@ -69,7 +70,7 @@
             // buttonCommunicate1Hz
             // 
             buttonCommunicate1Hz.Enabled = false;
-            buttonCommunicate1Hz.Location = new Point(336, 17);
+            buttonCommunicate1Hz.Location = new Point(445, 16);
             buttonCommunicate1Hz.Name = "buttonCommunicate1Hz";
             buttonCommunicate1Hz.Size = new Size(137, 23);
             buttonCommunicate1Hz.TabIndex = 4;
@@ -121,11 +122,22 @@
             buttonUpdateZoneNames.UseVisualStyleBackColor = true;
             buttonUpdateZoneNames.Click += buttonUpdateZoneNames_Click;
             // 
+            // buttonDetectPort
+            // 
+            buttonDetectPort.Location = new Point(12, 16);
+            buttonDetectPort.Name = "buttonDetectPort";
+            buttonDetectPort.Size = new Size(87, 23);
+            buttonDetectPort.TabIndex = 9;
+            buttonDetectPort.Text = "Detect port";
+            buttonDetectPort.UseVisualStyleBackColor = true;
+            buttonDetectPort.Click += buttonDetectPort_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 732);
+            Controls.Add(buttonDetectPort);
             Controls.Add(buttonUpdateZoneNames);
             Controls.Add(listBoxZoneNames);
             Controls.Add(buttonGetZoneNames);
@@ -133,7 +145,7 @@
             Controls.Add(buttonCommunicate1Hz);
             Controls.Add(label2);
             Controls.Add(comboBoxCOMPorts);
-            Controls.Add(btnConnect);
+            Controls.Add(buttonConnect);
             MaximizeBox = false;
             Name = "Form1";
             Text = "Serial Connection Demo";
@@ -143,7 +155,7 @@
 
         #endregion
 
-        private Button btnConnect;
+        private Button buttonConnect;
         private ComboBox comboBoxCOMPorts;
         private Label label2;
         private Button buttonCommunicate1Hz;
@@ -151,5 +163,6 @@
         private Button buttonGetZoneNames;
         private ListBox listBoxZoneNames;
         private Button buttonUpdateZoneNames;
+        private Button buttonDetectPort;
     }
 }
