@@ -29,10 +29,10 @@
         {
             _listBox.MouseDoubleClick += HandleListBoxDoubleClick;
             _listBox.DrawMode = DrawMode.OwnerDrawFixed;
-            _listBox.DrawItem += HandleListBoxDrawItem;
+            _listBox.DrawItem += HighlightEditedLines;
         }
 
-        private void HandleListBoxDrawItem(object? sender, DrawItemEventArgs e)
+        private void HighlightEditedLines(object? sender, DrawItemEventArgs e)
         {
             if (e.Index < 0) return;
 
