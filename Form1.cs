@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO.Ports;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -8,43 +9,79 @@ namespace WinFormsSerial
 {
     public partial class Form1 : Form
     {
-        private readonly SerialPortManager _serialPortManager;
-        private readonly FaultAlarmCommandProcessor _faultAlarmCommandProcessor;
-        private readonly ZoneNameEditor _zoneNameEditor;
+        private readonly SerialPortManager? _serialPortManager;
+        private readonly FaultAlarmCommandProcessor? _faultAlarmCommandProcessor;
+        private readonly ZoneNameEditor? _zoneNameEditor;
+        private FireControlPanelEmulator? _emulator;
+        private SerialPortEnumerator? _portEnumerator; 
+        
         private bool _isCommunicating;
         private const string COMMUNICATE_TEXT = "Communicate 1Hz";
-        private const string STOP_TEXT = "Stop";
-        private FireControlPanelEmulator _emulator;
-        private SerialPortEnumerator? _portEnumerator;
+        private const string STOP_TEXT = "Stop";        
 
         public Form1()
         {
             InitializeComponent();
-            LogMessage(GetWindowsVersion());
-            InitializePortEnumerator();
+            SetTitle();
+            try
+            {
+                CheckWindowsVersion();
+                InitializePortEnumerator();
 
-            _emulator = new FireControlPanelEmulator(LogMessage);
-            _serialPortManager = new SerialPortManager(LogMessage);
-            _faultAlarmCommandProcessor = new FaultAlarmCommandProcessor(LogMessage);
-            _zoneNameEditor = new ZoneNameEditor(listBoxZoneNames);
+                _serialPortManager = new SerialPortManager(LogMessage);
+                _faultAlarmCommandProcessor = new FaultAlarmCommandProcessor(LogMessage);
+                _zoneNameEditor = new ZoneNameEditor(listBoxZoneNames);
+                _emulator = new FireControlPanelEmulator(LogMessage);
 
-            Controls.Add(_zoneNameEditor.EditBoxControl);
-            InitializeUI();
-            // Add build date/time to form title
-            var buildDate = System.Reflection.Assembly.GetExecutingAssembly()
-            .GetCustomAttributes<System.Reflection.AssemblyMetadataAttribute>()
-            .FirstOrDefault(attr => attr.Key == "BuildDate")?.Value;
-
-
-            this.Text = $"My Application - Built on {buildDate}";
+                Controls.Add(_zoneNameEditor.EditBoxControl);
+                InitializeUI();                
+            } catch (Exception ex)
+            {
+                LogMessage(ex.Message);
+                DisableAllGUIControls(Controls);
+            }
         }
 
-        public static string GetWindowsVersion()
+        public void DisableAllGUIControls(Control.ControlCollection controls, bool disable = true)
+        {
+            foreach (Control control in controls)
+            {
+                // Disable/enable the current control
+                if (control is not Form)  // Skip the form itself
+                {
+                    control.Enabled = !disable;
+                }
+
+                // Recursively process any child controls
+                if (control.HasChildren)
+                {
+                    DisableAllGUIControls(control.Controls, disable);
+                }
+            }
+        }
+
+        private void SetTitle() {
+            var buildDate = System.Reflection.Assembly.GetExecutingAssembly()
+                    .GetCustomAttributes<System.Reflection.AssemblyMetadataAttribute>()
+                    .FirstOrDefault(attr => attr.Key == "BuildDate")?.Value;
+            Text = $"Fire Control Panel demo - Built on {buildDate}";
+        }
+
+        private void CheckWindowsVersion()
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return "Not running on Windows";
+                throw new PlatformNotSupportedException("This application requires Windows.");
 
             var osVersion = Environment.OSVersion.Version;
+
+            // Check for minimum Windows version (Windows 8 = 6.2)
+            if (osVersion.Major < 6 || (osVersion.Major == 6 && osVersion.Minor < 2))
+            {
+                throw new PlatformNotSupportedException(
+                    $"This application requires Windows 8 or later. Detected Windows version: {osVersion.Major}.{osVersion.Minor}"
+                );
+            }
+
             string windowsVersion;
 
             if (osVersion.Major == 10 && osVersion.Build >= 22000)
@@ -73,7 +110,7 @@ namespace WinFormsSerial
                         break;
                     default:
                         windowsVersion = "Unknown Windows Version";
-                        break;
+                        throw new PlatformNotSupportedException(windowsVersion);
                 }
             }
             else
@@ -81,9 +118,9 @@ namespace WinFormsSerial
                 windowsVersion = $"Legacy Windows (Version {osVersion})";
             }
 
-            return $"OS: {windowsVersion}, " +
+            LogMessage($"OS: {windowsVersion}, " +
                    $"Build Number: {osVersion.Build}, " +
-                   $"Revision: {osVersion.Revision}";
+                   $"Revision: {osVersion.Revision}");
         }
 
         private void InitializePortEnumerator()
@@ -386,7 +423,7 @@ namespace WinFormsSerial
             _communicationCts?.Cancel();
             _communicationCts?.Dispose();
             _isCommunicating = false;
-            _serialPortManager.Dispose();
+            _serialPortManager?.Dispose();
             _portEnumerator?.Dispose();
             base.OnFormClosing(e);
         }
