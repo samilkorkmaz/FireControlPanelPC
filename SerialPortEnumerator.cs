@@ -67,12 +67,25 @@ namespace WinFormsSerial
             }
         }
 
+        private string[] _previousPorts = Array.Empty<string>();
         private void DeviceChangeEvent(object sender, EventArrivedEventArgs e)
         {
             // Small delay to allow Windows to finish device initialization
             System.Threading.Thread.Sleep(500);
-            var ports = GetAvailablePorts();
-            PortsChanged?.Invoke(this, new SerialPortsChangedEventArgs(ports));
+            var currentPorts = GetAvailablePorts();
+
+            // Only trigger event if the port list has actually changed. When a device is connected, Windows generates multiple Win32_DeviceChangeEvent events
+            // during the device initialization process. This is because:
+            // * The physical device is detected
+            // * The driver is loaded
+            // * The COM port is registered
+            // * Various device properties are set up
+            // Windows is generating multiple device change events during the device initialization sequence.
+            if (!Enumerable.SequenceEqual(currentPorts, _previousPorts))
+            {
+                _previousPorts = currentPorts;
+                PortsChanged?.Invoke(this, new SerialPortsChangedEventArgs(currentPorts));
+            }
         }
 
         public void Dispose()
