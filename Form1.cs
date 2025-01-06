@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO.Ports;
+using System.Reflection;
 using System.Text;
 
 namespace WinFormsSerial
@@ -28,7 +29,11 @@ namespace WinFormsSerial
             Controls.Add(_zoneNameEditor.EditBoxControl);
             InitializeUI();
             // Add build date/time to form title
-            Text = $"Serial Connection Demo - Built: {GetBuildDateTime():yyyy-MM-dd HH:mm:ss}";
+            var buildDate = System.Reflection.Assembly.GetExecutingAssembly()
+            .GetCustomAttributes<System.Reflection.AssemblyMetadataAttribute>()
+            .FirstOrDefault(attr => attr.Key == "BuildDate")?.Value;
+
+            this.Text = $"My Application - Built on {buildDate}";
         }
 
         private void InitializePortEnumerator()
@@ -64,13 +69,6 @@ namespace WinFormsSerial
             {
                 comboBoxCOMPorts.Text = "No COM ports!";
             }
-        }
-
-        private static DateTime GetBuildDateTime()
-        {
-            string exePath = Application.ExecutablePath;
-            FileInfo fileInfo = new FileInfo(exePath);
-            return fileInfo.LastWriteTime;
         }
 
         private void InitializeUI()
