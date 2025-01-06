@@ -7,6 +7,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
 	<BuildDate>$([System.DateTime]::Now.ToString("yyyy-MM-dd HH:mm:ss"))</BuildDate>
+	<ApplicationIcon>NavPointerIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +17,25 @@
       <_Parameter1>BuildDate</_Parameter1>
       <_Parameter2>$(BuildDate)</_Parameter2>
     </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="NavPointerIcon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

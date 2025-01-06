@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormUser));
             buttonSwitchToDev = new Button();
             textBox1 = new TextBox();
             textBox2 = new TextBox();
@@ -39,13 +40,15 @@
             textBox3 = new TextBox();
             button1 = new Button();
             button2 = new Button();
+            pictureBox1 = new PictureBox();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
             // buttonSwitchToDev
             // 
-            buttonSwitchToDev.Location = new Point(227, 13);
+            buttonSwitchToDev.Location = new Point(436, 13);
             buttonSwitchToDev.Name = "buttonSwitchToDev";
-            buttonSwitchToDev.Size = new Size(189, 23);
+            buttonSwitchToDev.Size = new Size(175, 23);
             buttonSwitchToDev.TabIndex = 0;
             buttonSwitchToDev.Text = "Switch to developer mode";
             buttonSwitchToDev.UseVisualStyleBackColor = true;
@@ -151,11 +154,22 @@
             button2.UseVisualStyleBackColor = true;
             button2.Click += button2_Click;
             // 
+            // pictureBox1
+            // 
+            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
+            pictureBox1.Location = new Point(227, 10);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(194, 25);
+            pictureBox1.SizeMode = PictureBoxSizeMode.AutoSize;
+            pictureBox1.TabIndex = 11;
+            pictureBox1.TabStop = false;
+            // 
             // FormUser
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 414);
+            ClientSize = new Size(623, 414);
+            Controls.Add(pictureBox1);
             Controls.Add(button2);
             Controls.Add(button1);
             Controls.Add(textBox3);
@@ -167,9 +181,12 @@
             Controls.Add(textBox2);
             Controls.Add(textBox1);
             Controls.Add(buttonSwitchToDev);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             Name = "FormUser";
             Text = "NVS-Pointer Yangın Algılama ve İhbar Paneli - v1.0";
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -187,5 +204,6 @@
         private TextBox textBox3;
         private Button button1;
         private Button button2;
+        private PictureBox pictureBox1;
     }
 }
