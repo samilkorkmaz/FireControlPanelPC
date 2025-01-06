@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO.Ports;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace WinFormsSerial
@@ -19,6 +20,7 @@ namespace WinFormsSerial
         public Form1()
         {
             InitializeComponent();
+            LogMessage(GetWindowsVersion());
             InitializePortEnumerator();
 
             _emulator = new FireControlPanelEmulator(LogMessage);
@@ -33,7 +35,55 @@ namespace WinFormsSerial
             .GetCustomAttributes<System.Reflection.AssemblyMetadataAttribute>()
             .FirstOrDefault(attr => attr.Key == "BuildDate")?.Value;
 
+
             this.Text = $"My Application - Built on {buildDate}";
+        }
+
+        public static string GetWindowsVersion()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return "Not running on Windows";
+
+            var osVersion = Environment.OSVersion.Version;
+            string windowsVersion;
+
+            if (osVersion.Major == 10 && osVersion.Build >= 22000)
+            {
+                windowsVersion = "Windows 11";
+            }
+            else if (osVersion.Major == 10)
+            {
+                windowsVersion = "Windows 10";
+            }
+            else if (osVersion.Major == 6)
+            {
+                switch (osVersion.Minor)
+                {
+                    case 3:
+                        windowsVersion = "Windows 8.1";
+                        break;
+                    case 2:
+                        windowsVersion = "Windows 8";
+                        break;
+                    case 1:
+                        windowsVersion = "Windows 7";
+                        break;
+                    case 0:
+                        windowsVersion = "Windows Vista";
+                        break;
+                    default:
+                        windowsVersion = "Unknown Windows Version";
+                        break;
+                }
+            }
+            else
+            {
+                windowsVersion = $"Legacy Windows (Version {osVersion})";
+            }
+
+            return $"OS: {windowsVersion}, " +
+                   $"Build Number: {osVersion.Build}, " +
+                   $"Revision: {osVersion.Revision}";
         }
 
         private void InitializePortEnumerator()
