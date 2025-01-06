@@ -13,10 +13,12 @@ namespace WinFormsSerial
         private const string COMMUNICATE_TEXT = "Communicate 1Hz";
         private const string STOP_TEXT = "Stop";
         private FireControlPanelEmulator _emulator;
+        private SerialPortEnumerator? _portEnumerator;
 
         public Form1()
         {
             InitializeComponent();
+            InitializePortEnumerator();
 
             _emulator = new FireControlPanelEmulator(LogMessage);
             _serialPortManager = new SerialPortManager(LogMessage);
@@ -25,9 +27,43 @@ namespace WinFormsSerial
 
             Controls.Add(_zoneNameEditor.EditBoxControl);
             InitializeUI();
-            PopulateCOMPorts();
             // Add build date/time to form title
             Text = $"Serial Connection Demo - Built: {GetBuildDateTime():yyyy-MM-dd HH:mm:ss}";
+        }
+
+        private void InitializePortEnumerator()
+        {
+            _portEnumerator = new SerialPortEnumerator();
+            _portEnumerator.PortsChanged += PortEnumerator_PortsChanged;
+
+            // Get initial port list
+            UpdatePortList(_portEnumerator.GetAvailablePorts());
+        }
+
+        private void PortEnumerator_PortsChanged(object sender, SerialPortEnumerator.SerialPortsChangedEventArgs e)
+        {
+            // Since this event comes from a different thread, we need to use Invoke
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => UpdatePortList(e.Ports)));
+                return;
+            }
+            UpdatePortList(e.Ports);
+        }
+
+        private void UpdatePortList(string[] ports)
+        {
+            comboBoxCOMPorts.Items.Clear();
+            buttonConnect.Enabled = ports.Length > 0;
+            if (ports.Length > 0)
+            {
+                comboBoxCOMPorts.Items.AddRange(ports);
+                comboBoxCOMPorts.SelectedIndex = 0;
+            }
+            else
+            {
+                comboBoxCOMPorts.Text = "No COM ports!";
+            }
         }
 
         private static DateTime GetBuildDateTime()
@@ -54,20 +90,6 @@ namespace WinFormsSerial
             }
             textBoxLog.AppendText(message + Environment.NewLine);
             textBoxLog.ScrollToCaret();
-        }
-
-        private void PopulateCOMPorts()
-        {
-            comboBoxCOMPorts.Items.Clear();
-            string[] ports = _serialPortManager.GetAvailablePortNames();
-
-            comboBoxCOMPorts.Items.AddRange(ports);
-            buttonConnect.Enabled = ports.Length > 0;
-
-            if (ports.Length > 0)
-                comboBoxCOMPorts.SelectedIndex = 0;
-            else
-                comboBoxCOMPorts.Text = "No COM ports!";
         }
 
         private async void buttonConnect_Click(object sender, EventArgs e)
@@ -306,6 +328,7 @@ namespace WinFormsSerial
             _communicationCts?.Dispose();
             _isCommunicating = false;
             _serialPortManager.Dispose();
+            _portEnumerator?.Dispose();
             base.OnFormClosing(e);
         }
 
