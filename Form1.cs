@@ -12,11 +12,13 @@ namespace WinFormsSerial
         private bool _isCommunicating;
         private const string COMMUNICATE_TEXT = "Communicate 1Hz";
         private const string STOP_TEXT = "Stop";
+        private FireControlPanelEmulator _emulator;
 
         public Form1()
         {
             InitializeComponent();
 
+            _emulator = new FireControlPanelEmulator(LogMessage);
             _serialPortManager = new SerialPortManager(LogMessage);
             _faultAlarmCommandProcessor = new FaultAlarmCommandProcessor(LogMessage);
             _zoneNameEditor = new ZoneNameEditor(listBoxZoneNames);
@@ -310,7 +312,7 @@ namespace WinFormsSerial
         private void buttonDetectPort_Click(object sender, EventArgs e)
         {
             string[] availablePorts = SerialPort.GetPortNames();
-            LogMessage($"Checking if fire control panel is connected by sending command { Constants.IS_THERE_FIRE_ALARM } to {availablePorts.Length} availabale ports...");
+            LogMessage($"Checking if fire control panel is connected by sending command {Constants.IS_THERE_FIRE_ALARM} to {availablePorts.Length} availabale ports...");
             buttonDetectPort.Enabled = false;
             buttonConnect.Enabled = false;
             string detectedPort = "";
@@ -378,6 +380,26 @@ namespace WinFormsSerial
             {
                 comboBoxCOMPorts.SelectedIndex = i;
             }*/
+        }
+
+        private async void checkBoxEmulate_CheckedChanged(object sender, EventArgs e)
+        {
+            checkBoxEmulate.Enabled = false;  // Prevent rapid toggling
+            try
+            {
+                if (checkBoxEmulate.Checked == true)
+                {
+                    _emulator.Run();
+                }
+                else
+                {
+                    await _emulator.StopAsync();
+                }
+            }
+            finally
+            {
+                checkBoxEmulate.Enabled = true;
+            }
         }
     }
 }

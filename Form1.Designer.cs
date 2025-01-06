@@ -37,11 +37,12 @@
             listBoxZoneNames = new ListBox();
             buttonUpdateZoneNames = new Button();
             buttonDetectPort = new Button();
+            checkBoxEmulate = new CheckBox();
             SuspendLayout();
             // 
             // buttonConnect
             // 
-            buttonConnect.Location = new Point(341, 16);
+            buttonConnect.Location = new Point(547, 12);
             buttonConnect.Name = "buttonConnect";
             buttonConnect.Size = new Size(93, 23);
             buttonConnect.TabIndex = 0;
@@ -53,7 +54,7 @@
             // 
             comboBoxCOMPorts.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxCOMPorts.FormattingEnabled = true;
-            comboBoxCOMPorts.Location = new Point(121, 16);
+            comboBoxCOMPorts.Location = new Point(327, 12);
             comboBoxCOMPorts.Name = "comboBoxCOMPorts";
             comboBoxCOMPorts.Size = new Size(121, 23);
             comboBoxCOMPorts.TabIndex = 2;
@@ -61,7 +62,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(248, 20);
+            label2.Location = new Point(454, 16);
             label2.Name = "label2";
             label2.Size = new Size(87, 15);
             label2.TabIndex = 3;
@@ -70,7 +71,7 @@
             // buttonCommunicate1Hz
             // 
             buttonCommunicate1Hz.Enabled = false;
-            buttonCommunicate1Hz.Location = new Point(445, 16);
+            buttonCommunicate1Hz.Location = new Point(651, 12);
             buttonCommunicate1Hz.Name = "buttonCommunicate1Hz";
             buttonCommunicate1Hz.Size = new Size(137, 23);
             buttonCommunicate1Hz.TabIndex = 4;
@@ -124,7 +125,7 @@
             // 
             // buttonDetectPort
             // 
-            buttonDetectPort.Location = new Point(12, 16);
+            buttonDetectPort.Location = new Point(218, 12);
             buttonDetectPort.Name = "buttonDetectPort";
             buttonDetectPort.Size = new Size(87, 23);
             buttonDetectPort.TabIndex = 9;
@@ -132,11 +133,23 @@
             buttonDetectPort.UseVisualStyleBackColor = true;
             buttonDetectPort.Click += buttonDetectPort_Click;
             // 
+            // checkBoxEmulate
+            // 
+            checkBoxEmulate.AutoSize = true;
+            checkBoxEmulate.Location = new Point(12, 16);
+            checkBoxEmulate.Name = "checkBoxEmulate";
+            checkBoxEmulate.Size = new Size(159, 19);
+            checkBoxEmulate.TabIndex = 10;
+            checkBoxEmulate.Text = "Emulate on COM 3 <-> 4";
+            checkBoxEmulate.UseVisualStyleBackColor = true;
+            checkBoxEmulate.CheckedChanged += checkBoxEmulate_CheckedChanged;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 732);
+            Controls.Add(checkBoxEmulate);
             Controls.Add(buttonDetectPort);
             Controls.Add(buttonUpdateZoneNames);
             Controls.Add(listBoxZoneNames);
@@ -164,5 +177,6 @@
         private ListBox listBoxZoneNames;
         private Button buttonUpdateZoneNames;
         private Button buttonDetectPort;
+        private CheckBox checkBoxEmulate;
     }
 }
