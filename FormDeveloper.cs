@@ -7,7 +7,7 @@ using System.Text;
 
 namespace WinFormsSerial
 {
-    public partial class Form1 : Form
+    public partial class FormDeveloper : Form
     {
         private readonly SerialPortManager? _serialPortManager;
         private readonly FaultAlarmCommandProcessor? _faultAlarmCommandProcessor;
@@ -19,7 +19,7 @@ namespace WinFormsSerial
         private const string COMMUNICATE_TEXT = "Communicate 1Hz";
         private const string STOP_TEXT = "Stop";        
 
-        public Form1()
+        public FormDeveloper()
         {
             InitializeComponent();
             SetTitle();
@@ -64,7 +64,7 @@ namespace WinFormsSerial
             var buildDate = System.Reflection.Assembly.GetExecutingAssembly()
                     .GetCustomAttributes<System.Reflection.AssemblyMetadataAttribute>()
                     .FirstOrDefault(attr => attr.Key == "BuildDate")?.Value;
-            Text = $"Fire Control Panel demo - Built on {buildDate}";
+            Text = $"Fire Control Panel Dev Mode - Built on {buildDate}";
         }
 
         private void CheckWindowsVersion()

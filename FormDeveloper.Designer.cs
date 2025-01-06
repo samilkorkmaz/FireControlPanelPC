@@ -1,6 +1,6 @@
 ﻿namespace WinFormsSerial
 {
-    partial class Form1
+    partial class FormDeveloper
     {
         /// <summary>
         ///  Required designer variable.
