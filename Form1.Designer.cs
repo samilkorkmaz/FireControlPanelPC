@@ -129,7 +129,7 @@
             buttonDetectPort.Name = "buttonDetectPort";
             buttonDetectPort.Size = new Size(87, 23);
             buttonDetectPort.TabIndex = 9;
-            buttonDetectPort.Text = "Detect port";
+            buttonDetectPort.Text = "Detect Panel";
             buttonDetectPort.UseVisualStyleBackColor = true;
             buttonDetectPort.Click += buttonDetectPort_Click;
             // 

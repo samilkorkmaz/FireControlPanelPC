@@ -7,33 +7,48 @@ namespace WinFormsSerial
     {
         private ManagementEventWatcher? watcher;
         public event EventHandler<SerialPortsChangedEventArgs>? PortsChanged;
+        private Action<string> _logCallback;
 
         public class SerialPortsChangedEventArgs : EventArgs
         {
             public string[] Ports { get; private set; }
+            public bool HasPorts => Ports != null && Ports.Length > 0;
+
             public SerialPortsChangedEventArgs(string[] ports)
             {
-                Ports = ports;
+                Ports = ports ?? new string[0]; // Ensure we never have null
             }
         }
 
-        public SerialPortEnumerator()
+        public SerialPortEnumerator(Action<string> logCallback)
         {
+            _logCallback = logCallback;
             InitializeWatcher();
         }
 
         public string[] GetAvailablePorts()
         {
-            using (var searcher = new ManagementObjectSearcher
-                ("SELECT * FROM Win32_PnPEntity WHERE (Caption LIKE '%(COM%)')"))
+            try
             {
-                var portnames = SerialPort.GetPortNames();
-                var ports = searcher.Get()
-                    .Cast<ManagementObject>()
-                    .Select(p => p["Caption"].ToString())
-                    .ToArray();
+                using (var searcher = new ManagementObjectSearcher
+                    ("SELECT * FROM Win32_PnPEntity WHERE (Caption LIKE '%(COM%)')"))
+                {
+                    var portnames = SerialPort.GetPortNames();
 
-                return portnames;
+                    // Check if we got any ports
+                    if (portnames == null || portnames.Length == 0)
+                    {
+                        return new string[0];
+                    }
+
+                    return portnames;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the error if you have logging
+                _logCallback($"Error getting ports: {ex.Message}");
+                return new string[0]; // Return empty array instead of null
             }
         }
 

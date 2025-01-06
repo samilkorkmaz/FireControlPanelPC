@@ -38,7 +38,7 @@ namespace WinFormsSerial
 
         private void InitializePortEnumerator()
         {
-            _portEnumerator = new SerialPortEnumerator();
+            _portEnumerator = new SerialPortEnumerator(LogMessage);
             _portEnumerator.PortsChanged += PortEnumerator_PortsChanged;
 
             // Get initial port list
@@ -56,19 +56,30 @@ namespace WinFormsSerial
             UpdatePortList(e.Ports);
         }
 
+
         private void UpdatePortList(string[] ports)
         {
             comboBoxCOMPorts.Items.Clear();
-            buttonConnect.Enabled = ports.Length > 0;
-            if (ports.Length > 0)
+
+            if (ports.Length == 0)
             {
-                comboBoxCOMPorts.Items.AddRange(ports);
-                comboBoxCOMPorts.SelectedIndex = 0;
+                comboBoxCOMPorts.Items.Add("No COM ports available");
+                comboBoxCOMPorts.Enabled = false;
+                buttonConnect.Enabled = false;
             }
             else
             {
-                comboBoxCOMPorts.Text = "No COM ports!";
+                comboBoxCOMPorts.Items.AddRange(ports);
+                comboBoxCOMPorts.Enabled = true;
+                buttonConnect.Enabled = true;
+                comboBoxCOMPorts.SelectedIndex = 0; // Select first port
             }
+
+            // You might want to update status label or other UI elements
+            string message = ports.Length == 0 ?
+                "No COM ports detected" :
+                $"Found {ports.Length} COM port(s)";
+            LogMessage(message);
         }
 
         private void InitializeUI()
