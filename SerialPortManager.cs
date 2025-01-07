@@ -136,5 +136,21 @@ namespace WinFormsSerial
                 }
             }
         }
+
+        public byte[] GetZoneNames()
+        {
+            var expectedBytesLength = Constants.NB_OF_ZONES * Constants.ZONE_NAME_LENGTH;
+            var (responseBytes, readBytesLength) = SendCommand([Constants.GET_ZONE_NAMES_COMMAND], expectedBytesLength);
+
+            if (readBytesLength == expectedBytesLength)
+            {
+                return responseBytes;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Error when getting zone names command {Constants.GET_ZONE_NAMES_COMMAND}: " +
+                    $"Expected number of bytes {expectedBytesLength} is different from received {readBytesLength}");
+            }
+        }
     }
 }

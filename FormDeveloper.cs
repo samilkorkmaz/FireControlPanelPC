@@ -14,11 +14,11 @@ namespace WinFormsSerial
         private readonly FaultAlarmCommandProcessor? _faultAlarmCommandProcessor;
         private readonly ZoneNameEditor? _zoneNameEditor;
         private FireControlPanelEmulator? _emulator;
-        private SerialPortEnumerator? _portEnumerator; 
-        
+        private SerialPortEnumerator? _portEnumerator;
+
         private bool _isCommunicating;
         private const string COMMUNICATE_TEXT = "Communicate 1Hz";
-        private const string STOP_TEXT = "Stop";        
+        private const string STOP_TEXT = "Stop";
 
         public FormDeveloper()
         {
@@ -38,18 +38,20 @@ namespace WinFormsSerial
                 _emulator = new FireControlPanelEmulator(LogMessage);
 
                 Controls.Add(_zoneNameEditor.EditBoxControl);
-                InitializeUI();                
-            } catch (Exception ex)
+                InitializeUI();
+            }
+            catch (Exception ex)
             {
                 LogMessage(ex.Message);
                 Utils.DisableAllGUIControls(Controls);
             }
         }
 
-        private void SetTitle() {
+        private void SetTitle()
+        {
             Text = $"Fire Control Panel Dev Mode - Built on {Utils.GetBuildDate()}";
         }
-                
+
         private void InitializePortEnumerator()
         {
             _portEnumerator = new SerialPortEnumerator(LogMessage, SafeUpdatePortList);
@@ -192,7 +194,8 @@ namespace WinFormsSerial
                             {
                                 LogMessage("ERROR: _faultAlarmCommandProcessor == null");
                             }
-                        } else
+                        }
+                        else
                         {
                             LogMessage("ERROR: _serialPortManager == null");
                         }
@@ -220,7 +223,7 @@ namespace WinFormsSerial
 
         private async void buttonGetZoneNames_Click(object sender, EventArgs e)
         {
-            LogMessage("Get zone names");
+            LogMessage("Get zone names...");
             /*for (int i = 0; i < Constants.NB_OF_ZONES; i++)
             {
                 listBoxZoneNames.Items.Add("zone " + i);
@@ -231,30 +234,18 @@ namespace WinFormsSerial
             {
                 await Task.Run(() => // Use async/await pattern to prevent button clicks in rapid succession
                 {
-                    var expectedBytesLength = Constants.NB_OF_ZONES * Constants.ZONE_NAME_LENGTH;
-                    var (responseBytes, readBytesLength) = _serialPortManager.SendCommand(
-                        new[] { Constants.GET_ZONE_NAMES_COMMAND },
-                        expectedBytesLength
-                    );
-
-                    if (readBytesLength == expectedBytesLength)
+                    var responseBytes = _serialPortManager.GetZoneNames();
+                    Invoke(() =>
                     {
-                        this.Invoke(() =>
-                        {
-                            ParseAndDisplayZoneNames(responseBytes);
-                            LogMessage("Zone names obtained successfully.");
-                            buttonUpdateZoneNames.Enabled = true;
-                        });
-                    }
-                    else
-                    {
-                        LogMessage($"Expected number of bytes {expectedBytesLength} is different from received {readBytesLength}");
-                    }
+                        ParseAndDisplayZoneNames(responseBytes);
+                        LogMessage("Zone names obtained successfully.");
+                        buttonUpdateZoneNames.Enabled = true;
+                    });
                 });
             }
             catch (Exception ex)
             {
-                LogMessage($"Error for getting zone names command {Constants.GET_ZONE_NAMES_COMMAND}: {ex.Message}");
+                LogMessage(ex.Message);
                 buttonUpdateZoneNames.Enabled = false;
             }
             finally
