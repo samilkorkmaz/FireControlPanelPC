@@ -40,7 +40,7 @@ namespace WinFormsSerial
             AddToLog("Run emulator...");
             _emulator.Run();
 
-            var detectedPort = SerialPortManager.DetectFirePanelPort(AddToLog);
+            var detectedPort = await SerialPortManager.DetectFireControlPanelPortAsync(AddToLog);
             if (string.IsNullOrEmpty(detectedPort))
             {
                 AddToLog($"Yangın alarm paneli ile iletişim kurulamadı! Panelin PC'ye bağlantısını kontrol edin.");

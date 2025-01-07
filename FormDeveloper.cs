@@ -269,11 +269,11 @@ namespace WinFormsSerial
             }
         }
 
-        private void buttonDetectPort_Click(object sender, EventArgs e)
+        private async void buttonDetectPort_Click(object sender, EventArgs e)
         {
             buttonDetectPort.Enabled = false;
             buttonConnect.Enabled = false;
-            var detectedPort = SerialPortManager.DetectFirePanelPort(LogMessage);
+            var detectedPort = await SerialPortManager.DetectFireControlPanelPortAsync(LogMessage);
             if (string.IsNullOrEmpty(detectedPort))
             {
                 LogMessage($"No fire control panel detected!");

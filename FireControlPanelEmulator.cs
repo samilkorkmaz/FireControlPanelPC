@@ -7,7 +7,7 @@ namespace WinFormsSerial
         private CancellationTokenSource? _cancellationTokenSource;
         private Task? _runningTask;
         private Action<string> _logCallback;
-        private const string RECEIVE_PORT = "COM4";
+        private const string RECEIVE_PORT = "COM5";
 
         public FireControlPanelEmulator(Action<string> logCallback)
         {
@@ -19,7 +19,7 @@ namespace WinFormsSerial
             _cancellationTokenSource = new CancellationTokenSource();
 
             // Start the emulator on a separate task
-            _runningTask = Task.Run(() => RunEmulator(_cancellationTokenSource.Token));
+            _runningTask = RunEmulatorAsync(_cancellationTokenSource.Token);
         }
 
         public async Task StopAsync()
@@ -44,42 +44,48 @@ namespace WinFormsSerial
             }
         }
 
-        private void RunEmulator(CancellationToken cancellationToken)
+        private async Task RunEmulatorAsync(CancellationToken cancellationToken)
         {
-            // Configure the receiver COM port:
-            using SerialPort serialPort = new SerialPort(RECEIVE_PORT, 9600, Parity.None, 8, StopBits.One);
-            serialPort.ReadTimeout = 2000;
-            serialPort.WriteTimeout = 2000;
+            using SerialPort serialPort = new SerialPort(RECEIVE_PORT, 9600, Parity.None, 8, StopBits.One)
+            {
+                ReadTimeout = 2000,
+                WriteTimeout = 2000
+            };
 
             try
             {
                 serialPort.Open();
-                _logCallback($"Emulator receive port {RECEIVE_PORT} opened successfully, waiting data to be sent to COM3...");
+                _logCallback($"Emulator receive port {RECEIVE_PORT} opened successfully, waiting data to be sent to {RECEIVE_PORT}+1...");
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     try
                     {
                         byte[] bufferReceived = new byte[1024];
-                        // Read incoming data
-                        int nBytesReceived = serialPort.Read(bufferReceived, 0, bufferReceived.Length);
+                        int nBytesReceived = await Task.Factory.FromAsync(
+                            serialPort.BaseStream.BeginRead,
+                            serialPort.BaseStream.EndRead,
+                            bufferReceived, 0, bufferReceived.Length,
+                            null);
 
                         if (nBytesReceived > 0)
                         {
-                            // Create a properly sized array for the received data
                             byte[] receivedData = new byte[nBytesReceived];
                             Array.Copy(bufferReceived, receivedData, nBytesReceived);
                             _logCallback($"Emulator received data: {string.Join(", ", receivedData.Select(b => b.ToString()))}");
 
-                            // Create and send acknowledgement
-                            byte[] ackData = new byte[] { 0xAA, 0xBB, 0xCC };
-                            serialPort.Write(ackData, 0, ackData.Length);
+                            byte[] ackData = [0xAA, 0xBB, 0xCC];
+                            await Task.Factory.FromAsync(
+                                serialPort.BaseStream.BeginWrite,
+                                serialPort.BaseStream.EndWrite,
+                                ackData, 0, ackData.Length,
+                                null);
+
                             _logCallback($"Emulator sent acknowledgement: {string.Join(", ", ackData.Select(b => b.ToString()))}");
                         }
                     }
                     catch (TimeoutException)
                     {
-                        // Ignore timeout and continue listening
                         continue;
                     }
                 }
@@ -90,8 +96,7 @@ namespace WinFormsSerial
             }
             finally
             {
-                if (serialPort.IsOpen)
-                    serialPort.Close();
+                if (serialPort.IsOpen) serialPort.Close();
                 _logCallback($"Emulator stopped and port {RECEIVE_PORT} closed.");
             }
         }

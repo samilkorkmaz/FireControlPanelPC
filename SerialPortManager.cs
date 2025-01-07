@@ -197,48 +197,50 @@ namespace WinFormsSerial
             command[commandSize - 1] = 27; // End marker
             return command;
         }
-
-        public static string? DetectFirePanelPort(Action<string> logCallback)
+        public static async Task<string?> DetectFireControlPanelPortAsync(Action<string> logCallback)
         {
             string[] availablePorts = SerialPort.GetPortNames();
             logCallback($"Yangın alarm paneli ile {availablePorts.Length} porta {Constants.IS_THERE_FIRE_ALARM} komutuyla iletişim deneniyor...");
+
             foreach (string port in availablePorts)
             {
                 logCallback($"{port}...");
                 try
                 {
-                    using (SerialPort testPort = new SerialPort(port))
+                    using SerialPort testPort = new SerialPort(port)
                     {
-                        testPort.BaudRate = 9600;    // Match your device settings
-                        testPort.DataBits = 8;
-                        testPort.Parity = Parity.None;
-                        testPort.StopBits = StopBits.One;
-                        testPort.ReadTimeout = 300;   // Short timeout for quick scanning
-                        testPort.WriteTimeout = 300;
+                        BaudRate = 9600,
+                        DataBits = 8,
+                        Parity = Parity.None,
+                        StopBits = StopBits.One,
+                        ReadTimeout = 300,
+                        WriteTimeout = 300
+                    };
 
-                        testPort.Open();
-
-                        // Clear any existing data
-                        testPort.DiscardInBuffer();
-                        testPort.DiscardOutBuffer();
-
-                        // Send the "are you there?" command
-                        testPort.Write(new byte[] { Constants.IS_THERE_FIRE_ALARM }, 0, 1);
-
-                        // Read response
-                        byte[] response = new byte[1];
-                        int bytesRead = testPort.Read(response, 0, 1);
-                        testPort.Close();
-
-                        if (bytesRead == 1)
+                    bool portChecked = await Task.Run(() => {
+                        try
                         {
-                            return port;
+                            testPort.Open();
+                            testPort.Write(new byte[] { Constants.IS_THERE_FIRE_ALARM }, 0, 1);
+
+                            byte[] response = new byte[1];
+                            int bytesRead = testPort.Read(response, 0, 1);
+                            return bytesRead == 1;
                         }
-                    }
+                        catch
+                        {
+                            return false;
+                        }
+                        finally
+                        {
+                            if (testPort.IsOpen) testPort.Close();
+                        }
+                    });
+
+                    if (portChecked) return port;
                 }
-                catch (Exception)
+                catch
                 {
-                    // Port is either in use or not the correct one
                     continue;
                 }
             }
