@@ -193,13 +193,13 @@ namespace WinFormsSerial
             return command;
         }
 
-        public string? DetectFirePanelPort()
+        public static string? DetectFirePanelPort(Action<string> logCallback)
         {
             string[] availablePorts = SerialPort.GetPortNames();
-            _logCallback($"Checking if fire control panel is connected by sending command {Constants.IS_THERE_FIRE_ALARM} to {availablePorts.Length} availabale ports...");
+            logCallback($"Yangın alarm paneli ile {availablePorts.Length} porta {Constants.IS_THERE_FIRE_ALARM} komutuyla iletişim deneniyor...");
             foreach (string port in availablePorts)
             {
-                _logCallback($"Checking {port}...");
+                logCallback($"{port}...");
                 try
                 {
                     using (SerialPort testPort = new SerialPort(port))

@@ -32,7 +32,7 @@
             buttonSwitchToDev = new Button();
             textBox1 = new TextBox();
             textBox2 = new TextBox();
-            textBox3 = new TextBox();
+            textBoxFireControlPanelConnection = new TextBox();
             button1 = new Button();
             button2 = new Button();
             pictureBox1 = new PictureBox();
@@ -89,18 +89,18 @@
             textBox2.Text = "HATA";
             textBox2.TextAlign = HorizontalAlignment.Center;
             // 
-            // textBox3
+            // textBoxFireControlPanelConnection
             // 
-            textBox3.BackColor = Color.FromArgb(0, 192, 0);
-            textBox3.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            textBox3.ForeColor = Color.White;
-            textBox3.Location = new Point(12, 10);
-            textBox3.Name = "textBox3";
-            textBox3.ReadOnly = true;
-            textBox3.Size = new Size(206, 23);
-            textBox3.TabIndex = 8;
-            textBox3.Text = "BAĞLANTI VAR";
-            textBox3.TextAlign = HorizontalAlignment.Center;
+            textBoxFireControlPanelConnection.BackColor = Color.Black;
+            textBoxFireControlPanelConnection.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            textBoxFireControlPanelConnection.ForeColor = Color.White;
+            textBoxFireControlPanelConnection.Location = new Point(12, 10);
+            textBoxFireControlPanelConnection.Name = "textBoxFireControlPanelConnection";
+            textBoxFireControlPanelConnection.ReadOnly = true;
+            textBoxFireControlPanelConnection.Size = new Size(206, 23);
+            textBoxFireControlPanelConnection.TabIndex = 8;
+            textBoxFireControlPanelConnection.Text = "BAĞLANTI KONTROL...";
+            textBoxFireControlPanelConnection.TextAlign = HorizontalAlignment.Center;
             // 
             // button1
             // 
@@ -132,7 +132,7 @@
             // 
             // textBoxLog
             // 
-            textBoxLog.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            textBoxLog.Font = new Font("Courier New", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
             textBoxLog.Location = new Point(227, 241);
             textBoxLog.Multiline = true;
             textBoxLog.Name = "textBoxLog";
@@ -260,7 +260,7 @@
             Controls.Add(pictureBox1);
             Controls.Add(button2);
             Controls.Add(button1);
-            Controls.Add(textBox3);
+            Controls.Add(textBoxFireControlPanelConnection);
             Controls.Add(textBox2);
             Controls.Add(textBox1);
             Controls.Add(buttonSwitchToDev);
@@ -283,7 +283,7 @@
         private TextBox textBox1;
         private TextBox textBox2;
         private ListBox listBox3;
-        private TextBox textBox3;
+        private TextBox textBoxFireControlPanelConnection;
         private Button button1;
         private Button button2;
         private PictureBox pictureBox1;

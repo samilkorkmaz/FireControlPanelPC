@@ -284,7 +284,7 @@ namespace WinFormsSerial
         {
             buttonDetectPort.Enabled = false;
             buttonConnect.Enabled = false;
-            var detectedPort = _serialPortManager.DetectFirePanelPort();
+            var detectedPort = SerialPortManager.DetectFirePanelPort(LogMessage);
             if (string.IsNullOrEmpty(detectedPort))
             {
                 LogMessage($"No fire control panel detected!");
