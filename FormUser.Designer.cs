@@ -30,7 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormUser));
             buttonSwitchToDev = new Button();
-            textBox1 = new TextBox();
+            textBoxAlarm = new TextBox();
             textBox2 = new TextBox();
             textBoxFireControlPanelConnection = new TextBox();
             button1 = new Button();
@@ -63,18 +63,18 @@
             buttonSwitchToDev.UseVisualStyleBackColor = true;
             buttonSwitchToDev.Click += buttonSwitchToDev_Click;
             // 
-            // textBox1
+            // textBoxAlarm
             // 
-            textBox1.BackColor = Color.Red;
-            textBox1.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            textBox1.ForeColor = Color.White;
-            textBox1.Location = new Point(12, 41);
-            textBox1.Name = "textBox1";
-            textBox1.ReadOnly = true;
-            textBox1.Size = new Size(206, 23);
-            textBox1.TabIndex = 1;
-            textBox1.Text = "ALARM";
-            textBox1.TextAlign = HorizontalAlignment.Center;
+            textBoxAlarm.BackColor = Color.Red;
+            textBoxAlarm.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            textBoxAlarm.ForeColor = Color.White;
+            textBoxAlarm.Location = new Point(12, 41);
+            textBoxAlarm.Name = "textBoxAlarm";
+            textBoxAlarm.ReadOnly = true;
+            textBoxAlarm.Size = new Size(206, 23);
+            textBoxAlarm.TabIndex = 1;
+            textBoxAlarm.Text = "ALARM";
+            textBoxAlarm.TextAlign = HorizontalAlignment.Center;
             // 
             // textBox2
             // 
@@ -262,7 +262,7 @@
             Controls.Add(button1);
             Controls.Add(textBoxFireControlPanelConnection);
             Controls.Add(textBox2);
-            Controls.Add(textBox1);
+            Controls.Add(textBoxAlarm);
             Controls.Add(buttonSwitchToDev);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -280,7 +280,7 @@
         #endregion
 
         private Button buttonSwitchToDev;
-        private TextBox textBox1;
+        private TextBox textBoxAlarm;
         private TextBox textBox2;
         private ListBox listBox3;
         private TextBox textBoxFireControlPanelConnection;

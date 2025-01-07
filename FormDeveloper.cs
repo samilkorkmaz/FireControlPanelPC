@@ -39,6 +39,16 @@ namespace WinFormsSerial
             }            
         }
 
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            _communicationCts?.Cancel();
+            _communicationCts?.Dispose();
+            _isCommunicating = false;
+            _serialPortManager?.Dispose();
+            _portEnumerator?.Dispose();
+            base.OnFormClosing(e);
+        }
+
         private void SetTitle()
         {
             Text = $"Fire Control Panel Dev Mode - Built on {Utils.GetBuildDate()}";
@@ -94,7 +104,7 @@ namespace WinFormsSerial
                 BeginInvoke(() => LogMessage(message));
                 return;
             }
-            textBoxLog.AppendText(message + Environment.NewLine);
+            textBoxLog.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ": " + message + Environment.NewLine);
             textBoxLog.ScrollToCaret();
         }
 
@@ -268,16 +278,6 @@ namespace WinFormsSerial
             {
                 LogMessage(ex.Message);
             }
-        }
-
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            _communicationCts?.Cancel();
-            _communicationCts?.Dispose();
-            _isCommunicating = false;
-            _serialPortManager?.Dispose();
-            _portEnumerator?.Dispose();
-            base.OnFormClosing(e);
         }
 
         private void buttonDetectPort_Click(object sender, EventArgs e)

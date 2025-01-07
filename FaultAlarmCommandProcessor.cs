@@ -37,20 +37,20 @@
             }
         }
 
-        private void ProcessFireAlarm(byte response)
+        private void ProcessFireAlarm(byte responseFirstByte)
         {
-            if (response == 0)
+            if (responseFirstByte == 0)
                 _logCallback("No fire alarm.");
             else
-                _logCallback($"Fire alarm in zones: {GetZoneNumbers(response)}");
+                _logCallback($"Fire alarm in zones: {GetZoneWithProblemsAsString(responseFirstByte)}");
         }
 
-        private void ProcessZoneLineFault(byte response)
+        private void ProcessZoneLineFault(byte responseFirstByte)
         {
-            if (response == 0)
+            if (responseFirstByte == 0)
                 _logCallback("No zone line fault.");
             else
-                _logCallback($"Zone line fault in zones: {GetZoneNumbers(response)}");
+                _logCallback($"Zone line fault in zones: {GetZoneWithProblemsAsString(responseFirstByte)}");
         }
 
         private void ProcessControlPanelFault(byte response)
@@ -81,15 +81,21 @@
             }
         }
 
-        private static string GetZoneNumbers(byte response)
+        private static string GetZoneWithProblemsAsString(byte responseFirstByte)
         {
-            var zones = new List<string>();
-            for (int i = 0; i < Constants.NB_OF_ZONES; i++)
+            List<string> zonesStr = GetZonesWithProblems(responseFirstByte).Select(x => x.ToString()).ToList();            
+            return string.Join(" ", zonesStr);
+        }
+
+        public static List<int> GetZonesWithProblems(byte responseFirstByte)
+        {
+            var zones = new List<int>();
+            for (int iZone = 0; iZone < Constants.NB_OF_ZONES; iZone++)
             {
-                if ((response & (1 << i)) != 0)
-                    zones.Add((i + 1).ToString());
+                if ((responseFirstByte & (1 << iZone)) != 0)
+                    zones.Add(iZone);
             }
-            return string.Join(" ", zones);
+            return zones;
         }
     }
 }

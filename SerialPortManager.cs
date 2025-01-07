@@ -108,9 +108,11 @@ namespace WinFormsSerial
             _serialPort?.Dispose();
         }
 
-        public async Task ProcessPeriodicCommandsAsync(CancellationTokenSource communicationCts)
+        public async Task<byte[]> ProcessPeriodicCommandsAsync(CancellationTokenSource communicationCts)
         {
-            if (_faultAlarmCommandProcessor == null) throw new  ArgumentNullException("_faultAlarmCommandProcessor == null");
+            if (_faultAlarmCommandProcessor == null) throw new ArgumentNullException("_faultAlarmCommandProcessor == null");
+
+            byte[] lastResponse = [];
 
             foreach (byte command in Constants.PERIODIC_COMMANDS_ORDER)
             {
@@ -118,26 +120,29 @@ namespace WinFormsSerial
 
                 try
                 {
-                    var (response, bytesRead) = SendCommand([command]);
+                    var (responseBytes, bytesRead) = SendCommand([command]);
                     if (bytesRead > 0)
                     {
-                        _faultAlarmCommandProcessor.ProcessResponse(command, response);
+                        _faultAlarmCommandProcessor.ProcessResponse(command, responseBytes);
+                        lastResponse = responseBytes; // Store the response but don't return yet
                     }
                 }
                 catch (Exception ex)
                 {
                     _logCallback($"Command {command} execution error: {ex.Message}");
                 }
-
-                try
-                {
-                    await Task.Delay(1000, communicationCts.Token); // 1Hz frequency
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
             }
+
+            try
+            {
+                await Task.Delay(1000, communicationCts.Token); // 1Hz frequency after all commands
+            }
+            catch (OperationCanceledException)
+            {
+                return []; // Return empty array if cancelled
+            }
+
+            return lastResponse; // Return the last valid response
         }
 
         public byte[] GetZoneNames()
