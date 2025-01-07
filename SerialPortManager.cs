@@ -106,5 +106,35 @@ namespace WinFormsSerial
             }
             _serialPort?.Dispose();
         }
+
+        public async Task ProcessPeriodicCommandsAsync(CancellationTokenSource communicationCts, FaultAlarmCommandProcessor faultAlarmCommandProcessor)
+        {
+            foreach (byte command in Constants.PERIODIC_COMMANDS_ORDER)
+            {
+                if (communicationCts.Token.IsCancellationRequested) break;
+
+                try
+                {
+                    var (response, bytesRead) = SendCommand([command]);
+                    if (bytesRead > 0)
+                    {
+                        faultAlarmCommandProcessor.ProcessResponse(command, response);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logCallback($"Command {command} execution error: {ex.Message}");
+                }
+
+                try
+                {
+                    await Task.Delay(1000, communicationCts.Token); // 1Hz frequency
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+            }
+        }
     }
 }

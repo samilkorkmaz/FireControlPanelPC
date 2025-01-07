@@ -179,47 +179,35 @@ namespace WinFormsSerial
 
                     try
                     {
-                        while (!_communicationCts.Token.IsCancellationRequested && _serialPortManager.IsConnected)
+                        if (_serialPortManager != null)
                         {
-                            foreach (byte command in Constants.PERIODIC_COMMANDS_ORDER)
+                            if (_faultAlarmCommandProcessor != null)
                             {
-                                if (_communicationCts.Token.IsCancellationRequested) break;
-
-                                try
+                                while (!_communicationCts.Token.IsCancellationRequested && _serialPortManager.IsConnected)
                                 {
-                                    var (response, bytesRead) = _serialPortManager.SendCommand([command]);
-                                    if (bytesRead > 0)
-                                    {
-                                        _faultAlarmCommandProcessor?.ProcessResponse(command, response);
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    LogMessage($"Command {command} execution error: {ex.Message}");
-                                    //return;
-                                }
-
-                                try
-                                {
-                                    await Task.Delay(1000, _communicationCts.Token); // 1Hz frequency
-                                }
-                                catch (OperationCanceledException)
-                                {
-                                    return;
+                                    await _serialPortManager.ProcessPeriodicCommandsAsync(_communicationCts, _faultAlarmCommandProcessor);
                                 }
                             }
+                            else
+                            {
+                                LogMessage("ERROR: _faultAlarmCommandProcessor == null");
+                            }
+                        } else
+                        {
+                            LogMessage("ERROR: _serialPortManager == null");
                         }
                     }
                     finally
                     {
                         _communicationCts.Dispose();
                         _communicationCts = null;
+                        LogMessage("Stopped");
                     }
                 }
                 else
                 {
                     _communicationCts?.Cancel();
-                    LogMessage("Stop");
+                    LogMessage("User requested stop...");
                 }
             }
             finally
