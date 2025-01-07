@@ -68,34 +68,34 @@ namespace WinFormsSerial
             }
         }
 
-        public (byte[] response, int bytesRead) SendCommand(byte[] command, int expectedResponseLength = 1)
+        public async Task<(byte[] response, int bytesRead)> SendCommandAsync(byte[] command, int expectedResponseLength = 1)
         {
             if (_serialPort == null || !_serialPort.IsOpen)
                 throw new InvalidOperationException("Serial port is not ready");
 
             try
             {
-                _serialPort.Write(command, 0, command.Length);
+                await Task.Factory.FromAsync(
+                    _serialPort.BaseStream.BeginWrite,
+                    _serialPort.BaseStream.EndWrite,
+                    command, 0, command.Length,
+                    null);
                 _logCallback($"Command sent: {string.Join(", ", command)}");
-            }
-            catch (Exception ex)
-            {
-                //_logCallback($"Write error: {ex.Message}");
-                throw new IOException($"Failed to write to serial port {_serialPort.PortName}: {ex.Message}", ex);
-            }
 
-            Thread.Sleep(500); // Wait for response
+                await Task.Delay(500); // Non-blocking wait
 
-            try
-            {
                 byte[] response = new byte[expectedResponseLength];
-                int bytesRead = _serialPort.Read(response, 0, expectedResponseLength);
+                int bytesRead = await Task.Factory.FromAsync(
+                    _serialPort.BaseStream.BeginRead,
+                    _serialPort.BaseStream.EndRead,
+                    response, 0, expectedResponseLength,
+                    null);
+
                 return (response, bytesRead);
             }
             catch (Exception ex)
             {
-                //_logCallback($"Read error: {ex.Message}");
-                throw new IOException($"Failed to read from serial port {_serialPort.PortName}: {ex.Message}", ex);
+                throw new IOException($"Serial port {_serialPort.PortName} error: {ex.Message}", ex);
             }
         }
 
@@ -108,7 +108,7 @@ namespace WinFormsSerial
             _serialPort?.Dispose();
         }
 
-        public async Task<byte[]> ProcessPeriodicCommandsAsync(CancellationTokenSource communicationCts)
+        public async Task<byte[]> ProcessPeriodicCommandsAsync(CancellationTokenSource communicationCts, int millisecondsDelay = 1000)
         {
             if (_faultAlarmCommandProcessor == null) throw new ArgumentNullException("_faultAlarmCommandProcessor == null");
 
@@ -120,7 +120,7 @@ namespace WinFormsSerial
 
                 try
                 {
-                    var (responseBytes, bytesRead) = SendCommand([command]);
+                    var (responseBytes, bytesRead) = await SendCommandAsync([command]);
                     if (bytesRead > 0)
                     {
                         _faultAlarmCommandProcessor.ProcessResponse(command, responseBytes);
@@ -135,7 +135,7 @@ namespace WinFormsSerial
 
             try
             {
-                await Task.Delay(1000, communicationCts.Token); // 1Hz frequency after all commands
+                await Task.Delay(millisecondsDelay, communicationCts.Token);
             }
             catch (OperationCanceledException)
             {
@@ -145,10 +145,10 @@ namespace WinFormsSerial
             return lastResponse; // Return the last valid response
         }
 
-        public byte[] GetZoneNames()
+        public async Task<byte[]> GetZoneNamesAsync()
         {
             var expectedBytesLength = Constants.NB_OF_ZONES * Constants.ZONE_NAME_LENGTH;
-            var (responseBytes, readBytesLength) = SendCommand([Constants.GET_ZONE_NAMES_COMMAND], expectedBytesLength);
+            var (responseBytes, readBytesLength) = await SendCommandAsync([Constants.GET_ZONE_NAMES_COMMAND], expectedBytesLength);
 
             if (readBytesLength == expectedBytesLength)
             {
@@ -161,10 +161,10 @@ namespace WinFormsSerial
             }
         }
 
-        public byte UpdateZoneNames(string[] zoneNames)
+        public async Task<byte> UpdateZoneNamesAsync(string[] zoneNames)
         {
             byte[] command = BuildZoneNamesUpdateCommand(zoneNames);
-            var (response, _) = SendCommand(command);
+            var (response, _) = await SendCommandAsync(command);
             var responseFirstByte = response[0];
             const byte expectedResponse = 245;
             if (responseFirstByte == expectedResponse)

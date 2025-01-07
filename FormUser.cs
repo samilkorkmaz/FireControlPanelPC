@@ -60,7 +60,7 @@ namespace WinFormsSerial
                 var communicationCts = new CancellationTokenSource();
                 while (_serialPortManager.IsConnected)
                 {
-                    byte[] response = await _serialPortManager.ProcessPeriodicCommandsAsync(communicationCts);
+                    byte[] response = await _serialPortManager.ProcessPeriodicCommandsAsync(communicationCts, 1000);
                     if (response.Length > 0)
                     {
                         var responseFirstByte = response[0];

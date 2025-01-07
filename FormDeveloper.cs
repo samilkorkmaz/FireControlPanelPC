@@ -215,24 +215,13 @@ namespace WinFormsSerial
         private async void buttonGetZoneNames_Click(object sender, EventArgs e)
         {
             LogMessage("Get zone names...");
-            /*for (int i = 0; i < Constants.NB_OF_ZONES; i++)
-            {
-                listBoxZoneNames.Items.Add("zone " + i);
-                buttonUpdateZoneNames.Enabled = true;
-            }*/
             buttonGetZoneNames.Enabled = false;
             try
             {
-                await Task.Run(() => // Use async/await pattern to prevent button clicks in rapid succession
-                {
-                    var responseBytes = _serialPortManager.GetZoneNames();
-                    Invoke(() =>
-                    {
-                        ParseAndDisplayZoneNames(responseBytes);
-                        LogMessage("Zone names obtained successfully.");
-                        buttonUpdateZoneNames.Enabled = true;
-                    });
-                });
+                var responseBytes = await _serialPortManager.GetZoneNamesAsync();
+                ParseAndDisplayZoneNames(responseBytes);
+                LogMessage("Zone names obtained successfully.");
+                buttonUpdateZoneNames.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -270,7 +259,7 @@ namespace WinFormsSerial
                     LogMessage("No zone names to update. Please get zone names first.");
                     return;
                 }
-                var responseFirstByte = _serialPortManager.UpdateZoneNames(listBoxZoneNames.Items.Cast<string>().ToArray());
+                var responseFirstByte = _serialPortManager.UpdateZoneNamesAsync(listBoxZoneNames.Items.Cast<string>().ToArray());
                 LogMessage($"Zone names update command sent successfully. Response: {responseFirstByte}");
                 _zoneNameEditor.ClearEditHistory(); // Clear edit highlight from edited lines
             }
