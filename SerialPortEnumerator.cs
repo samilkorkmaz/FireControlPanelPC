@@ -20,10 +20,16 @@ namespace WinFormsSerial
             }
         }
 
-        public SerialPortEnumerator(Action<string> logCallback)
+        public SerialPortEnumerator(Action<string> logCallback, Action<string[]> safeUpdateUIPortList)
         {
             _logCallback = logCallback;
             InitializeWatcher();
+            PortsChanged += (sender, e) => PortEnumerator_PortsChanged(sender, e, safeUpdateUIPortList);
+        }
+
+        private void PortEnumerator_PortsChanged(object? sender, SerialPortEnumerator.SerialPortsChangedEventArgs e, Action<string[]> safeUpdateUIPortList)
+        {            
+            safeUpdateUIPortList(e.Ports);
         }
 
         public string[] GetAvailablePorts()

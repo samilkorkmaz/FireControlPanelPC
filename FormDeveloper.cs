@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.IO.Ports;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -25,7 +26,10 @@ namespace WinFormsSerial
             SetTitle();
             try
             {
-                CheckWindowsVersion();
+                var (osVersion, windowsVersion) = Utils.CheckWindowsVersion();
+                LogMessage($"OS: {windowsVersion}, " +
+                   $"Build Number: {osVersion.Build}, " +
+                   $"Revision: {osVersion.Revision}");
                 InitializePortEnumerator();
 
                 _serialPortManager = new SerialPortManager(LogMessage);
@@ -38,111 +42,31 @@ namespace WinFormsSerial
             } catch (Exception ex)
             {
                 LogMessage(ex.Message);
-                DisableAllGUIControls(Controls);
-            }
-        }
-
-        public void DisableAllGUIControls(Control.ControlCollection controls, bool disable = true)
-        {
-            foreach (Control control in controls)
-            {
-                // Disable/enable the current control
-                if (control is not Form)  // Skip the form itself
-                {
-                    control.Enabled = !disable;
-                }
-
-                // Recursively process any child controls
-                if (control.HasChildren)
-                {
-                    DisableAllGUIControls(control.Controls, disable);
-                }
+                Utils.DisableAllGUIControls(Controls);
             }
         }
 
         private void SetTitle() {
-            var buildDate = System.Reflection.Assembly.GetExecutingAssembly()
-                    .GetCustomAttributes<System.Reflection.AssemblyMetadataAttribute>()
-                    .FirstOrDefault(attr => attr.Key == "BuildDate")?.Value;
-            Text = $"Fire Control Panel Dev Mode - Built on {buildDate}";
+            Text = $"Fire Control Panel Dev Mode - Built on {Utils.GetBuildDate()}";
         }
-
-        private void CheckWindowsVersion()
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                throw new PlatformNotSupportedException("This application requires Windows.");
-
-            var osVersion = Environment.OSVersion.Version;
-
-            // Check for minimum Windows version (Windows 8 = 6.2)
-            if (osVersion.Major < 6 || (osVersion.Major == 6 && osVersion.Minor < 2))
-            {
-                throw new PlatformNotSupportedException(
-                    $"This application requires Windows 8 or later. Detected Windows version: {osVersion.Major}.{osVersion.Minor}"
-                );
-            }
-
-            string windowsVersion;
-
-            if (osVersion.Major == 10 && osVersion.Build >= 22000)
-            {
-                windowsVersion = "Windows 11";
-            }
-            else if (osVersion.Major == 10)
-            {
-                windowsVersion = "Windows 10";
-            }
-            else if (osVersion.Major == 6)
-            {
-                switch (osVersion.Minor)
-                {
-                    case 3:
-                        windowsVersion = "Windows 8.1";
-                        break;
-                    case 2:
-                        windowsVersion = "Windows 8";
-                        break;
-                    case 1:
-                        windowsVersion = "Windows 7";
-                        break;
-                    case 0:
-                        windowsVersion = "Windows Vista";
-                        break;
-                    default:
-                        windowsVersion = "Unknown Windows Version";
-                        throw new PlatformNotSupportedException(windowsVersion);
-                }
-            }
-            else
-            {
-                windowsVersion = $"Legacy Windows (Version {osVersion})";
-            }
-
-            LogMessage($"OS: {windowsVersion}, " +
-                   $"Build Number: {osVersion.Build}, " +
-                   $"Revision: {osVersion.Revision}");
-        }
-
+                
         private void InitializePortEnumerator()
         {
-            _portEnumerator = new SerialPortEnumerator(LogMessage);
-            _portEnumerator.PortsChanged += PortEnumerator_PortsChanged;
+            _portEnumerator = new SerialPortEnumerator(LogMessage, SafeUpdatePortList);
 
             // Get initial port list
-            UpdatePortList(_portEnumerator.GetAvailablePorts());
+            SafeUpdatePortList(_portEnumerator.GetAvailablePorts());
         }
 
-        private void PortEnumerator_PortsChanged(object sender, SerialPortEnumerator.SerialPortsChangedEventArgs e)
+        private void SafeUpdatePortList(string[] ports)
         {
-            // Since this event comes from a different thread, we need to use Invoke
-            if (InvokeRequired)
+            if (InvokeRequired) // We're on a different thread - marshal the call to the UI thread
             {
-                Invoke(new Action(() => UpdatePortList(e.Ports)));
+                Invoke(new Action(() => UpdatePortList(ports)));
                 return;
             }
-            UpdatePortList(e.Ports);
+            UpdatePortList(ports);
         }
-
 
         private void UpdatePortList(string[] ports)
         {
@@ -179,7 +103,7 @@ namespace WinFormsSerial
 
         private void LogMessage(string message)
         {
-            if (InvokeRequired)
+            if (InvokeRequired) // We're on a different thread - marshal the call to the UI thread
             {
                 BeginInvoke(() => LogMessage(message));
                 return;
@@ -191,7 +115,6 @@ namespace WinFormsSerial
         private async void buttonConnect_Click(object sender, EventArgs e)
         {
             buttonConnect.Enabled = false;
-
             try
             {
                 if (_serialPortManager.IsConnected)
@@ -264,10 +187,10 @@ namespace WinFormsSerial
 
                                 try
                                 {
-                                    var (response, bytesRead) = _serialPortManager.SendCommand(new[] { command });
+                                    var (response, bytesRead) = _serialPortManager.SendCommand([command]);
                                     if (bytesRead > 0)
                                     {
-                                        _faultAlarmCommandProcessor.ProcessResponse(command, response);
+                                        _faultAlarmCommandProcessor?.ProcessResponse(command, response);
                                     }
                                 }
                                 catch (Exception ex)
