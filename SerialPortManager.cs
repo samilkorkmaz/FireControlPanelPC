@@ -190,5 +190,52 @@ namespace WinFormsSerial
             command[commandSize - 1] = 27; // End marker
             return command;
         }
+
+        public string? DetectFirePanelPort()
+        {
+            string[] availablePorts = SerialPort.GetPortNames();
+            _logCallback($"Checking if fire control panel is connected by sending command {Constants.IS_THERE_FIRE_ALARM} to {availablePorts.Length} availabale ports...");
+            foreach (string port in availablePorts)
+            {
+                _logCallback($"Checking {port}...");
+                try
+                {
+                    using (SerialPort testPort = new SerialPort(port))
+                    {
+                        testPort.BaudRate = 9600;    // Match your device settings
+                        testPort.DataBits = 8;
+                        testPort.Parity = Parity.None;
+                        testPort.StopBits = StopBits.One;
+                        testPort.ReadTimeout = 300;   // Short timeout for quick scanning
+                        testPort.WriteTimeout = 300;
+
+                        testPort.Open();
+
+                        // Clear any existing data
+                        testPort.DiscardInBuffer();
+                        testPort.DiscardOutBuffer();
+
+                        // Send the "are you there?" command
+                        testPort.Write(new byte[] { Constants.IS_THERE_FIRE_ALARM }, 0, 1);
+
+                        // Read response
+                        byte[] response = new byte[1];
+                        int bytesRead = testPort.Read(response, 0, 1);
+                        testPort.Close();
+
+                        if (bytesRead == 1)
+                        {
+                            return port;
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // Port is either in use or not the correct one
+                    continue;
+                }
+            }
+            return null;
+        }
     }
 }
