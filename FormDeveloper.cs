@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows.Forms;
 
 namespace WinFormsSerial
 {
@@ -280,45 +281,17 @@ namespace WinFormsSerial
                     return;
                 }
 
-                byte[] command = BuildZoneNamesUpdateCommand();
-                var (response, _) = _serialPortManager.SendCommand(command);
-                var responseFirstByte = response[0];
-                const byte expectedResponse = 245;
-                if (responseFirstByte == expectedResponse)
-                {
-                    LogMessage($"Zone names update command sent successfully. Response: {responseFirstByte}");
-                    _zoneNameEditor.ClearEditHistory(); // Clear edit highlight from edited lines
-                }
-                else
-                {
-                    LogMessage($"Error: Zone names update expectedResponse was {expectedResponse}, got {responseFirstByte}");
-                }
+                var responseFirstByte = _serialPortManager.UpdateZoneNames(listBoxZoneNames.Items.Cast<string>().ToArray());
+                LogMessage($"Zone names update command sent successfully. Response: {responseFirstByte}");
+                _zoneNameEditor.ClearEditHistory(); // Clear edit highlight from edited lines
             }
             catch (Exception ex)
             {
-                LogMessage($"Error for updating zone names command {Constants.SET_ZONE_NAMES_COMMAND}: {ex.Message}");
+                LogMessage(ex.Message);
             }
         }
 
-        private byte[] BuildZoneNamesUpdateCommand()
-        {
-            const int commandSize = 1 + Constants.NB_OF_ZONES * (1 + Constants.ZONE_NAME_LENGTH) + 1;
-            byte[] command = new byte[commandSize];
-            command[0] = Constants.SET_ZONE_NAMES_COMMAND;
-
-            for (int i = 0; i < Constants.NB_OF_ZONES; i++)
-            {
-                string zoneName = (listBoxZoneNames.Items[i]?.ToString() ?? "").PadRight(Constants.ZONE_NAME_LENGTH);
-                byte[] nameBytes = Encoding.ASCII.GetBytes(zoneName);
-
-                int nameStart = 2 + i * (1 + Constants.ZONE_NAME_LENGTH);
-                command[nameStart - 1] = (byte)(200 + i + 1);
-                Array.Copy(nameBytes, 0, command, nameStart, Constants.ZONE_NAME_LENGTH);
-            }
-
-            command[commandSize - 1] = 27; // End marker
-            return command;
-        }
+        
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {

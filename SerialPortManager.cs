@@ -1,4 +1,5 @@
 ﻿using System.IO.Ports;
+using System.Text;
 
 namespace WinFormsSerial
 {
@@ -151,6 +152,43 @@ namespace WinFormsSerial
                 throw new InvalidOperationException($"Error when getting zone names command {Constants.GET_ZONE_NAMES_COMMAND}: " +
                     $"Expected number of bytes {expectedBytesLength} is different from received {readBytesLength}");
             }
+        }
+
+        public byte UpdateZoneNames(string[] zoneNames)
+        {
+            byte[] command = BuildZoneNamesUpdateCommand(zoneNames);
+            var (response, _) = SendCommand(command);
+            var responseFirstByte = response[0];
+            const byte expectedResponse = 245;
+            if (responseFirstByte == expectedResponse)
+            {
+                return responseFirstByte;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Error for updating zone names command {Constants.SET_ZONE_NAMES_COMMAND}: " +
+                    $"expectedResponse was {expectedResponse}, got {responseFirstByte}");
+            }
+        }
+
+        private byte[] BuildZoneNamesUpdateCommand(string[] zoneNames)
+        {
+            const int commandSize = 1 + Constants.NB_OF_ZONES * (1 + Constants.ZONE_NAME_LENGTH) + 1;
+            byte[] command = new byte[commandSize];
+            command[0] = Constants.SET_ZONE_NAMES_COMMAND;
+
+            for (int i = 0; i < Constants.NB_OF_ZONES; i++)
+            {
+                string zoneName = (zoneNames[i]?? "").PadRight(Constants.ZONE_NAME_LENGTH);
+                byte[] nameBytes = Encoding.ASCII.GetBytes(zoneName);
+
+                int nameStart = 2 + i * (1 + Constants.ZONE_NAME_LENGTH);
+                command[nameStart - 1] = (byte)(200 + i + 1);
+                Array.Copy(nameBytes, 0, command, nameStart, Constants.ZONE_NAME_LENGTH);
+            }
+
+            command[commandSize - 1] = 27; // End marker
+            return command;
         }
     }
 }
