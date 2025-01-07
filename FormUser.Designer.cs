@@ -39,10 +39,8 @@
             textBoxLog = new TextBox();
             groupBox1 = new GroupBox();
             listBoxFireAlarms = new ListBox();
-            listBox1 = new ListBox();
             groupBox2 = new GroupBox();
             listBoxZoneFaults = new ListBox();
-            listBox6 = new ListBox();
             groupBox3 = new GroupBox();
             listBoxControlPanelFaults = new ListBox();
             listBoxZoneNames = new ListBox();
@@ -145,7 +143,6 @@
             // groupBox1
             // 
             groupBox1.Controls.Add(listBoxFireAlarms);
-            groupBox1.Controls.Add(listBox1);
             groupBox1.Location = new Point(12, 70);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(206, 165);
@@ -157,27 +154,15 @@
             // 
             listBoxFireAlarms.Font = new Font("Courier New", 9F);
             listBoxFireAlarms.FormattingEnabled = true;
-            listBoxFireAlarms.Location = new Point(25, 20);
+            listBoxFireAlarms.Location = new Point(7, 20);
             listBoxFireAlarms.Name = "listBoxFireAlarms";
             listBoxFireAlarms.SelectionMode = SelectionMode.None;
-            listBoxFireAlarms.Size = new Size(174, 139);
+            listBoxFireAlarms.Size = new Size(192, 139);
             listBoxFireAlarms.TabIndex = 7;
-            // 
-            // listBox1
-            // 
-            listBox1.Font = new Font("Courier New", 9F);
-            listBox1.FormattingEnabled = true;
-            listBox1.Items.AddRange(new object[] { "1", "2", "3", "4", "5", "6", "7", "8" });
-            listBox1.Location = new Point(7, 20);
-            listBox1.Name = "listBox1";
-            listBox1.SelectionMode = SelectionMode.None;
-            listBox1.Size = new Size(20, 139);
-            listBox1.TabIndex = 6;
             // 
             // groupBox2
             // 
             groupBox2.Controls.Add(listBoxZoneFaults);
-            groupBox2.Controls.Add(listBox6);
             groupBox2.Location = new Point(227, 70);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(206, 165);
@@ -189,22 +174,11 @@
             // 
             listBoxZoneFaults.Font = new Font("Courier New", 9F);
             listBoxZoneFaults.FormattingEnabled = true;
-            listBoxZoneFaults.Location = new Point(25, 20);
+            listBoxZoneFaults.Location = new Point(6, 20);
             listBoxZoneFaults.Name = "listBoxZoneFaults";
             listBoxZoneFaults.SelectionMode = SelectionMode.None;
-            listBoxZoneFaults.Size = new Size(174, 139);
+            listBoxZoneFaults.Size = new Size(193, 139);
             listBoxZoneFaults.TabIndex = 7;
-            // 
-            // listBox6
-            // 
-            listBox6.Font = new Font("Courier New", 9F);
-            listBox6.FormattingEnabled = true;
-            listBox6.Items.AddRange(new object[] { "1", "2", "3", "4", "5", "6", "7", "8" });
-            listBox6.Location = new Point(7, 20);
-            listBox6.Name = "listBox6";
-            listBox6.SelectionMode = SelectionMode.None;
-            listBox6.Size = new Size(20, 139);
-            listBox6.TabIndex = 6;
             // 
             // groupBox3
             // 
@@ -291,10 +265,8 @@
         private TextBox textBoxLog;
         private GroupBox groupBox1;
         private ListBox listBoxFireAlarms;
-        private ListBox listBox1;
         private GroupBox groupBox2;
         private ListBox listBoxZoneFaults;
-        private ListBox listBox6;
         private GroupBox groupBox3;
         private ListBox listBoxControlPanelFaults;
         private ListBox listBoxZoneNames;

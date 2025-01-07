@@ -87,7 +87,7 @@ namespace WinFormsSerial
                 listBoxFireAlarms.Items.Clear();
 
                 // Convert integers to proper string format
-                string[] alarmItems = problemZones.Select(zone => $"Alarm {zone}").ToArray();
+                string[] alarmItems = problemZones.Select(zone => $"Alarm {zone + 1}").ToArray();
                 listBoxFireAlarms.Items.AddRange(alarmItems);
             }
         }
