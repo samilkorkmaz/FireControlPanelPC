@@ -280,7 +280,6 @@ namespace WinFormsSerial
                     LogMessage("No zone names to update. Please get zone names first.");
                     return;
                 }
-
                 var responseFirstByte = _serialPortManager.UpdateZoneNames(listBoxZoneNames.Items.Cast<string>().ToArray());
                 LogMessage($"Zone names update command sent successfully. Response: {responseFirstByte}");
                 _zoneNameEditor.ClearEditHistory(); // Clear edit highlight from edited lines
@@ -290,8 +289,6 @@ namespace WinFormsSerial
                 LogMessage(ex.Message);
             }
         }
-
-        
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
