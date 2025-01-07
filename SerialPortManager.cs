@@ -6,7 +6,7 @@ namespace WinFormsSerial
     public class SerialPortManager : IDisposable
     {
         private SerialPort? _serialPort;
-        private CancellationTokenSource? _cts;
+        private readonly FaultAlarmCommandProcessor? _faultAlarmCommandProcessor;
         private readonly Action<string> _logCallback;
 
         public bool IsConnected => _serialPort?.IsOpen ?? false;
@@ -14,6 +14,7 @@ namespace WinFormsSerial
         public SerialPortManager(Action<string> logCallback)
         {
             _logCallback = logCallback;
+            _faultAlarmCommandProcessor = new FaultAlarmCommandProcessor(logCallback);
         }
 
         public string getPortName()
@@ -40,7 +41,7 @@ namespace WinFormsSerial
                 WriteTimeout = 500
             };
 
-            _cts = new CancellationTokenSource();
+            var _cts = new CancellationTokenSource();
             _cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
 
             await Task.Run(() =>
@@ -100,7 +101,6 @@ namespace WinFormsSerial
 
         public void Dispose()
         {
-            _cts?.Dispose();
             if (_serialPort?.IsOpen == true)
             {
                 _serialPort.Close();
@@ -108,8 +108,10 @@ namespace WinFormsSerial
             _serialPort?.Dispose();
         }
 
-        public async Task ProcessPeriodicCommandsAsync(CancellationTokenSource communicationCts, FaultAlarmCommandProcessor faultAlarmCommandProcessor)
+        public async Task ProcessPeriodicCommandsAsync(CancellationTokenSource communicationCts)
         {
+            if (_faultAlarmCommandProcessor == null) throw new  ArgumentNullException("_faultAlarmCommandProcessor == null");
+
             foreach (byte command in Constants.PERIODIC_COMMANDS_ORDER)
             {
                 if (communicationCts.Token.IsCancellationRequested) break;
@@ -119,7 +121,7 @@ namespace WinFormsSerial
                     var (response, bytesRead) = SendCommand([command]);
                     if (bytesRead > 0)
                     {
-                        faultAlarmCommandProcessor.ProcessResponse(command, response);
+                        _faultAlarmCommandProcessor.ProcessResponse(command, response);
                     }
                 }
                 catch (Exception ex)

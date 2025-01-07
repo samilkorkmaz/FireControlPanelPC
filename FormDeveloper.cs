@@ -11,11 +11,10 @@ namespace WinFormsSerial
 {
     public partial class FormDeveloper : Form
     {
-        private readonly SerialPortManager? _serialPortManager;
-        private readonly FaultAlarmCommandProcessor? _faultAlarmCommandProcessor;
-        private readonly ZoneNameEditor? _zoneNameEditor;
-        private FireControlPanelEmulator? _emulator;
-        private SerialPortEnumerator? _portEnumerator;
+        private readonly SerialPortManager _serialPortManager;
+        private readonly ZoneNameEditor _zoneNameEditor;
+        private FireControlPanelEmulator _emulator;
+        private SerialPortEnumerator _portEnumerator;
 
         private bool _isCommunicating;
         private const string COMMUNICATE_TEXT = "Communicate 1Hz";
@@ -25,19 +24,18 @@ namespace WinFormsSerial
         {
             InitializeComponent();
             SetTitle();
+            _serialPortManager = new SerialPortManager(LogMessage);
+            _zoneNameEditor = new ZoneNameEditor(listBoxZoneNames);
+            _emulator = new FireControlPanelEmulator(LogMessage);
+            _portEnumerator = new SerialPortEnumerator(LogMessage, SafeUpdatePortList);            
+            SafeUpdatePortList(_portEnumerator.GetAvailablePorts());
             try
             {
                 var (osVersion, windowsVersion) = Utils.CheckWindowsVersion();
                 LogMessage($"OS: {windowsVersion}, " +
                    $"Build Number: {osVersion.Build}, " +
                    $"Revision: {osVersion.Revision}");
-                InitializePortEnumerator();
-
-                _serialPortManager = new SerialPortManager(LogMessage);
-                _faultAlarmCommandProcessor = new FaultAlarmCommandProcessor(LogMessage);
-                _zoneNameEditor = new ZoneNameEditor(listBoxZoneNames);
-                _emulator = new FireControlPanelEmulator(LogMessage);
-
+                
                 Controls.Add(_zoneNameEditor.EditBoxControl);
                 InitializeUI();
             }
@@ -45,21 +43,13 @@ namespace WinFormsSerial
             {
                 LogMessage(ex.Message);
                 Utils.DisableAllGUIControls(Controls);
-            }
+            }            
         }
 
         private void SetTitle()
         {
             Text = $"Fire Control Panel Dev Mode - Built on {Utils.GetBuildDate()}";
-        }
-
-        private void InitializePortEnumerator()
-        {
-            _portEnumerator = new SerialPortEnumerator(LogMessage, SafeUpdatePortList);
-
-            // Get initial port list
-            SafeUpdatePortList(_portEnumerator.GetAvailablePorts());
-        }
+        }               
 
         private void SafeUpdatePortList(string[] ports)
         {
@@ -184,22 +174,19 @@ namespace WinFormsSerial
                     {
                         if (_serialPortManager != null)
                         {
-                            if (_faultAlarmCommandProcessor != null)
+                            while (!_communicationCts.Token.IsCancellationRequested && _serialPortManager.IsConnected)
                             {
-                                while (!_communicationCts.Token.IsCancellationRequested && _serialPortManager.IsConnected)
-                                {
-                                    await _serialPortManager.ProcessPeriodicCommandsAsync(_communicationCts, _faultAlarmCommandProcessor);
-                                }
-                            }
-                            else
-                            {
-                                LogMessage("ERROR: _faultAlarmCommandProcessor == null");
+                                await _serialPortManager.ProcessPeriodicCommandsAsync(_communicationCts);
                             }
                         }
                         else
                         {
                             LogMessage("ERROR: _serialPortManager == null");
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogMessage(ex.Message);
                     }
                     finally
                     {
@@ -329,12 +316,13 @@ namespace WinFormsSerial
         }
 
         private async void checkBoxEmulate_CheckedChanged(object sender, EventArgs e)
-        {
+        {            
             checkBoxEmulate.Enabled = false;  // Prevent rapid toggling
             try
             {
                 if (checkBoxEmulate.Checked == true)
                 {
+                    LogMessage("Run emulator...");
                     _emulator.Run();
                 }
                 else
