@@ -108,7 +108,7 @@
         {
             if (!_editBox.Visible || _editBox.Text.Length > Constants.ZONE_NAME_LENGTH) return;
 
-            int index = (int)_editBox.Tag;
+            int index = (int)(_editBox.Tag ?? 0); // Returns 0 if Tag is null
             string originalText = _listBox.Items[index].ToString() ?? string.Empty;
 
             if (_editBox.Text != originalText)
