@@ -53,12 +53,11 @@ namespace WinFormsSerial
             }
         }
 
-        private async Task StartPeriodicCommandsAsync()
+        private Task StartPeriodicCommandsAsync()
         {
             _periodicCommandsCts = new CancellationTokenSource();
             _periodicCommandsTask = RunPeriodicCommandsAsync(_periodicCommandsCts.Token);
-            await Task.CompletedTask; // Ensure method is truly async
-                                      // Note: We don't await _periodicCommandsTask here as it runs continuously until cancelled
+            return Task.CompletedTask;
         }
 
         private async Task PausePeriodicCommandsAsync()
