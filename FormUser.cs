@@ -9,6 +9,9 @@ namespace WinFormsSerial
         private readonly SerialPortManager _serialPortManager;
         private readonly ZoneNameEditor _zoneNameEditor;
 
+        private CancellationTokenSource? _periodicCommandsCts;
+        private Task? _periodicCommandsTask;
+
         public FormUser()
         {
             InitializeComponent();
@@ -50,6 +53,58 @@ namespace WinFormsSerial
             }
         }
 
+        private async Task StartPeriodicCommandsAsync()
+        {
+            _periodicCommandsCts = new CancellationTokenSource();
+            _periodicCommandsTask = RunPeriodicCommandsAsync(_periodicCommandsCts.Token);
+        }
+
+        private async Task PausePeriodicCommandsAsync()
+        {
+            if (_periodicCommandsCts != null)
+            {
+                _periodicCommandsCts.Cancel();
+                if (_periodicCommandsTask != null)
+                {
+                    try
+                    {
+                        await _periodicCommandsTask;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Expected when cancelling
+                    }
+                }
+                _periodicCommandsCts = null;
+            }
+        }
+
+        private async Task RunPeriodicCommandsAsync(CancellationToken ct)
+        {
+            while (!ct.IsCancellationRequested && _serialPortManager.IsConnected)
+            {
+                foreach (byte command in Constants.PERIODIC_COMMANDS_ORDER)
+                {
+                    if (ct.IsCancellationRequested) break;
+
+                    try
+                    {
+                        var (responseBytes, bytesRead) = await _serialPortManager.SendCommandAsync([command]);
+                        if (bytesRead > 0)
+                        {
+                            var responseFirstByte = responseBytes[0];
+                            UpdateUI(command, responseFirstByte);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        AddToLog($"Command {command} hatası: {ex.Message}");
+                    }
+                }
+                await Task.Delay(1000, ct); // 1 second delay between cycles
+            }
+        }
+
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             _serialPortManager?.Dispose();
@@ -76,33 +131,12 @@ namespace WinFormsSerial
                 buttonGetZoneNames.Enabled = true;
                 buttonUpdateZoneNames.Enabled = true;
 
-                // Poll Fire Control Panel at 1Hz:
                 AddToLog($"Panel ile bağlantı kuruluyor...");
                 await _serialPortManager.ConnectAsync(detectedPort);
                 AddToLog($"Panel saniyede 1 sorgulanıyor...");
-                var communicationCts = new CancellationTokenSource();
-                while (_serialPortManager.IsConnected)
-                {
-                    //var (command, responseBytes) = await _serialPortManager.ProcessPeriodicCommandsAsync(communicationCts, 1000);
-                    foreach (byte command in Constants.PERIODIC_COMMANDS_ORDER)
-                    {
-                        if (communicationCts.Token.IsCancellationRequested) break;
 
-                        try
-                        {
-                            var (responseBytes, bytesRead) = await _serialPortManager.SendCommandAsync([command]);
-                            if (bytesRead > 0)
-                            {
-                                var responseFirstByte = responseBytes[0];
-                                UpdateUI(command, responseFirstByte);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            AddToLog($"Command {command} hatası: {ex.Message}");
-                        }
-                    }
-                }
+                // Start periodic commands
+                await StartPeriodicCommandsAsync();
             }
         }
 
@@ -183,15 +217,24 @@ namespace WinFormsSerial
             buttonGetZoneNames.Enabled = false;
             try
             {
+                // Pause periodic commands before getting zone names
+                await PausePeriodicCommandsAsync();
+
                 var responseBytes = await _serialPortManager.GetZoneNamesAsync();
                 ParseAndDisplayZoneNames(responseBytes);
                 AddToLog("Zone names obtained successfully.");
                 buttonUpdateZoneNames.Enabled = true;
+
+                // Restart periodic commands after getting zone names
+                await StartPeriodicCommandsAsync();
             }
             catch (Exception ex)
             {
                 AddToLog(ex.Message);
                 buttonUpdateZoneNames.Enabled = false;
+
+                // Ensure periodic commands are restarted even if there was an error
+                await StartPeriodicCommandsAsync();
             }
             finally
             {
@@ -212,9 +255,10 @@ namespace WinFormsSerial
             }
         }
 
-        private void buttonUpdateZoneNames_Click(object sender, EventArgs e)
+        private async void buttonUpdateZoneNames_Click(object sender, EventArgs e)
         {
             AddToLog("Update zone names");
+            buttonUpdateZoneNames.Enabled = false;
             try
             {
                 if (listBoxZoneNames.Items.Count == 0)
@@ -222,13 +266,29 @@ namespace WinFormsSerial
                     AddToLog("Bölge ismi yok, lütfen önce Bölge İsimlerini Al butonuna basınız.");
                     return;
                 }
-                var responseFirstByte = _serialPortManager.UpdateZoneNamesAsync(listBoxZoneNames.Items.Cast<string>().ToArray());
-                AddToLog($"Bölge isimlerini güncelle emri yollandı. Cevap: {responseFirstByte}");
+
+                // Pause periodic commands before updating zone names
+                await PausePeriodicCommandsAsync();
+
+                var response = await _serialPortManager.UpdateZoneNamesAsync(listBoxZoneNames.Items.Cast<string>().ToArray());
+                AddToLog($"Bölge isimlerini güncelle emri yollandı. Cevap: {response}");
                 _zoneNameEditor.ClearEditHistory(); // Clear edit highlight from edited lines
+
+                // Restart periodic commands after updating zone names
+                await StartPeriodicCommandsAsync();
             }
             catch (Exception ex)
             {
                 AddToLog(ex.Message);
+            }
+            finally
+            {
+                buttonUpdateZoneNames.Enabled = true;
+                // Ensure periodic commands are restarted even if there was an error
+                if (_serialPortManager.IsConnected && _periodicCommandsCts == null)
+                {
+                    await StartPeriodicCommandsAsync();
+                }
             }
         }
     }
