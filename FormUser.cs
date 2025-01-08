@@ -81,7 +81,7 @@ namespace WinFormsSerial
                 await _serialPortManager.ConnectAsync(detectedPort);
                 AddToLog($"Panel saniyede 1 sorgulanıyor...");
                 var communicationCts = new CancellationTokenSource();
-                while (_serialPortManager.IsConnected)
+                /*while (_serialPortManager.IsConnected)
                 {
                     //var (command, responseBytes) = await _serialPortManager.ProcessPeriodicCommandsAsync(communicationCts, 1000);
                     foreach (byte command in Constants.PERIODIC_COMMANDS_ORDER)
@@ -102,7 +102,7 @@ namespace WinFormsSerial
                             AddToLog($"Command {command} hatası: {ex.Message}");
                         }
                     }
-                }
+                }*/
             }
         }
 

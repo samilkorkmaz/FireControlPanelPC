@@ -74,7 +74,7 @@ namespace WinFormsSerial
                             Array.Copy(bufferReceived, receivedData, nBytesReceived);
                             _logCallback($"Emulator received data: {string.Join(", ", receivedData.Select(b => b.ToString()))}");
 
-                            byte[] responseBytes = [0xAA, 0xBB, 0xCC];
+                            byte[] responseBytes;// = [0x01, 0x02, 0x03];
                             var firstByteReceived = receivedData[0];
                             if (firstByteReceived == Constants.GET_ZONE_NAMES_COMMAND)
                             {
@@ -86,6 +86,9 @@ namespace WinFormsSerial
                                 }
                                 //responseBytes = [0xAA, 0xBB, 0xCC, 0xCC];
                                 responseBytes = System.Text.Encoding.ASCII.GetBytes(zoneNames); 
+                            } else
+                            {
+                                responseBytes = [0x01, 0x02, 0x03];
                             }
                             await Task.Factory.FromAsync(
                                 serialPort.BaseStream.BeginWrite,

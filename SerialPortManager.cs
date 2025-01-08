@@ -75,6 +75,10 @@ namespace WinFormsSerial
 
             try
             {
+                // Flush buffers before sending new command
+                _serialPort.DiscardInBuffer();
+                _serialPort.DiscardOutBuffer();
+
                 await Task.Factory.FromAsync(
                     _serialPort.BaseStream.BeginWrite,
                     _serialPort.BaseStream.EndWrite,
@@ -82,16 +86,16 @@ namespace WinFormsSerial
                     null);
                 _logCallback($"Command sent: {string.Join(", ", command)}");
 
-                await Task.Delay(500); // Non-blocking wait
+                await Task.Delay(500); // Non-blocking wait for response
 
-                byte[] response = new byte[expectedResponseLength];
+                byte[] responseBytes = new byte[expectedResponseLength];
                 int bytesRead = await Task.Factory.FromAsync(
                     _serialPort.BaseStream.BeginRead,
                     _serialPort.BaseStream.EndRead,
-                    response, 0, expectedResponseLength,
+                    responseBytes, 0, expectedResponseLength,
                     null);
 
-                return (response, bytesRead);
+                return (responseBytes, bytesRead);
             }
             catch (Exception ex)
             {
