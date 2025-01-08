@@ -57,7 +57,7 @@ namespace WinFormsSerial
         {
             _periodicCommandsCts = new CancellationTokenSource();
             _periodicCommandsTask = RunPeriodicCommandsAsync(_periodicCommandsCts.Token);
-            return Task.CompletedTask;
+            return Task.CompletedTask; // a lightweight way to return a completed task without allocating a new one. We need to return a Task to maintain the async method signature
         }
 
         private async Task PausePeriodicCommandsAsync()
