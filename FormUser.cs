@@ -7,6 +7,7 @@ namespace WinFormsSerial
     {
         private FireControlPanelEmulator _emulator;
         private readonly SerialPortManager _serialPortManager;
+        private readonly ZoneNameEditor _zoneNameEditor;
 
         public FormUser()
         {
@@ -15,20 +16,34 @@ namespace WinFormsSerial
 
             _serialPortManager = new SerialPortManager(AddToLog);
             _emulator = new FireControlPanelEmulator(AddToLog);
+            _zoneNameEditor = new ZoneNameEditor(listBoxZoneNames);
+            Controls.Add(_zoneNameEditor.EditBoxControl);
 
             AddToLog("Program başladı.");
-            //listBoxFireAlarms.Items.Clear();
-            for (int i = 0; i < Constants.NB_OF_ZONES; i++)
+            try
             {
-                listBoxFireAlarms.Items.Add("Alarm " + (i + 1));
-                listBoxZoneFaults.Items.Add("Zone Fault " + (i + 1));
-                listBoxZoneNames.Items.Add("Zone Name " + (i + 1));
-            }
-            listBoxControlPanelFaults.Items.AddRange(new string[] { "Batarya yok", "Batarya zayıf", "Şebeke yok", "Şarj zayıf", "Siren1 Arıza", "Siren2 Arıza",
+                var (osVersion, windowsVersion) = Utils.CheckWindowsVersion();
+                AddToLog($"OS: {windowsVersion}, " +
+                   $"Build Number: {osVersion.Build}, " +
+                   $"Revision: {osVersion.Revision}");
+
+                Controls.Add(_zoneNameEditor.EditBoxControl);
+                for (int i = 0; i < Constants.NB_OF_ZONES; i++)
+                {
+                    listBoxFireAlarms.Items.Add("Alarm " + (i + 1));
+                    listBoxZoneFaults.Items.Add("Zone Fault " + (i + 1));
+                    listBoxZoneNames.Items.Add("Zone Name " + (i + 1));
+                }
+                listBoxControlPanelFaults.Items.AddRange(new string[] { "Batarya yok", "Batarya zayıf", "Şebeke yok", "Şarj zayıf", "Siren1 Arıza", "Siren2 Arıza",
                 "Çıkış arıza", "Toprak arıza" });
 
-            Shown += FormUser_Shown;
-            //FormUser_Shown(this, null);
+                Shown += FormUser_Shown;
+            }
+            catch (Exception ex)
+            {
+                AddToLog(ex.Message);
+                Utils.DisableAllGUIControls(Controls);
+            }
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
@@ -54,6 +69,8 @@ namespace WinFormsSerial
                 AddToLog($"Yangın alarm paneli tespit edildi, port {detectedPort}.");
                 textBoxFireControlPanelConnection.BackColor = Color.Green;
                 textBoxFireControlPanelConnection.Text = "BAĞLANTI VAR";
+                buttonGetZoneNames.Enabled = true;
+                buttonUpdateZoneNames.Enabled = true;
 
                 // Poll Fire Control Panel at 1Hz:
                 AddToLog($"Panel ile bağlantı kuruluyor...");
@@ -101,7 +118,6 @@ namespace WinFormsSerial
                 BeginInvoke(() => AddToLog(message));
                 return;
             }
-            textBoxAlarm.BackColor = Color.Red;
             textBoxLog?.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ": " + message + Environment.NewLine); // "?" is here to prevent exception on window close, which disposes textBoxLog
             textBoxLog?.ScrollToCaret();
         }
@@ -144,6 +160,26 @@ namespace WinFormsSerial
                 Array.Copy(responseBytes, startIndex, zoneNameBytes, 0, Constants.ZONE_NAME_LENGTH);
                 string zoneName = Encoding.ASCII.GetString(zoneNameBytes).TrimEnd();
                 listBoxZoneNames.Items.Add(zoneName);
+            }
+        }
+
+        private void buttonUpdateZoneNames_Click(object sender, EventArgs e)
+        {
+            AddToLog("Update zone names");
+            try
+            {
+                if (listBoxZoneNames.Items.Count == 0)
+                {
+                    AddToLog("Bölge ismi yok, lütfen önce Bölge İsimlerini Al butonuna basınız.");
+                    return;
+                }
+                var responseFirstByte = _serialPortManager.UpdateZoneNamesAsync(listBoxZoneNames.Items.Cast<string>().ToArray());
+                AddToLog($"Bölge isimlerini güncelle emri yollandı. Cevap: {responseFirstByte}");
+                _zoneNameEditor.ClearEditHistory(); // Clear edit highlight from edited lines
+            }
+            catch (Exception ex)
+            {
+                AddToLog(ex.Message);
             }
         }
     }

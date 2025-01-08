@@ -63,7 +63,7 @@
             // 
             // textBoxAlarm
             // 
-            textBoxAlarm.BackColor = Color.Red;
+            textBoxAlarm.BackColor = Color.White;
             textBoxAlarm.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             textBoxAlarm.ForeColor = Color.White;
             textBoxAlarm.Location = new Point(12, 41);
@@ -76,9 +76,9 @@
             // 
             // textBox2
             // 
-            textBox2.BackColor = Color.Yellow;
+            textBox2.BackColor = Color.White;
             textBox2.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            textBox2.ForeColor = Color.Red;
+            textBox2.ForeColor = Color.White;
             textBox2.Location = new Point(227, 41);
             textBox2.Name = "textBox2";
             textBox2.ReadOnly = true;
@@ -102,6 +102,7 @@
             // 
             // buttonGetZoneNames
             // 
+            buttonGetZoneNames.Enabled = false;
             buttonGetZoneNames.Location = new Point(19, 241);
             buttonGetZoneNames.Name = "buttonGetZoneNames";
             buttonGetZoneNames.Size = new Size(119, 23);
@@ -112,12 +113,14 @@
             // 
             // buttonUpdateZoneNames
             // 
+            buttonUpdateZoneNames.Enabled = false;
             buttonUpdateZoneNames.Location = new Point(144, 241);
             buttonUpdateZoneNames.Name = "buttonUpdateZoneNames";
             buttonUpdateZoneNames.Size = new Size(74, 23);
             buttonUpdateZoneNames.TabIndex = 10;
             buttonUpdateZoneNames.Text = "Güncelle";
             buttonUpdateZoneNames.UseVisualStyleBackColor = true;
+            buttonUpdateZoneNames.Click += buttonUpdateZoneNames_Click;
             // 
             // pictureBox1
             // 
