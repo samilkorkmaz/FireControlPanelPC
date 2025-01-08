@@ -113,7 +113,7 @@ namespace WinFormsSerial
 
         private void AddToLog(string message)
         {
-            if (InvokeRequired) // Method called from different thread - marshal the call to the UI thread
+            if (InvokeRequired) // Method called from a different thread - marshal the call to the UI thread
             {
                 BeginInvoke(() => AddToLog(message));
                 return;
