@@ -90,6 +90,10 @@ namespace WinFormsSerial
                                 }
                                 responseBytes = System.Text.Encoding.ASCII.GetBytes(zoneNames);
                             }
+                            else if (firstByteReceived == Constants.SET_ZONE_NAMES_COMMAND)
+                            {
+                                responseBytes = [245];
+                            }
                             else
                             {
                                 Random random = new Random();
