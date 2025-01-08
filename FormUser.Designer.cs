@@ -33,8 +33,8 @@
             textBoxAlarm = new TextBox();
             textBox2 = new TextBox();
             textBoxFireControlPanelConnection = new TextBox();
-            button1 = new Button();
-            button2 = new Button();
+            buttonGetZoneNames = new Button();
+            buttonUpdateZoneNames = new Button();
             pictureBox1 = new PictureBox();
             textBoxLog = new TextBox();
             groupBox1 = new GroupBox();
@@ -100,23 +100,24 @@
             textBoxFireControlPanelConnection.Text = "BAĞLANTI KONTROL...";
             textBoxFireControlPanelConnection.TextAlign = HorizontalAlignment.Center;
             // 
-            // button1
+            // buttonGetZoneNames
             // 
-            button1.Location = new Point(19, 241);
-            button1.Name = "button1";
-            button1.Size = new Size(119, 23);
-            button1.TabIndex = 9;
-            button1.Text = "Bölge İsimlerini Al";
-            button1.UseVisualStyleBackColor = true;
+            buttonGetZoneNames.Location = new Point(19, 241);
+            buttonGetZoneNames.Name = "buttonGetZoneNames";
+            buttonGetZoneNames.Size = new Size(119, 23);
+            buttonGetZoneNames.TabIndex = 9;
+            buttonGetZoneNames.Text = "Bölge İsimlerini Al";
+            buttonGetZoneNames.UseVisualStyleBackColor = true;
+            buttonGetZoneNames.Click += buttonGetZoneNames_Click;
             // 
-            // button2
+            // buttonUpdateZoneNames
             // 
-            button2.Location = new Point(144, 241);
-            button2.Name = "button2";
-            button2.Size = new Size(74, 23);
-            button2.TabIndex = 10;
-            button2.Text = "Güncelle";
-            button2.UseVisualStyleBackColor = true;
+            buttonUpdateZoneNames.Location = new Point(144, 241);
+            buttonUpdateZoneNames.Name = "buttonUpdateZoneNames";
+            buttonUpdateZoneNames.Size = new Size(74, 23);
+            buttonUpdateZoneNames.TabIndex = 10;
+            buttonUpdateZoneNames.Text = "Güncelle";
+            buttonUpdateZoneNames.UseVisualStyleBackColor = true;
             // 
             // pictureBox1
             // 
@@ -232,8 +233,8 @@
             Controls.Add(groupBox1);
             Controls.Add(textBoxLog);
             Controls.Add(pictureBox1);
-            Controls.Add(button2);
-            Controls.Add(button1);
+            Controls.Add(buttonUpdateZoneNames);
+            Controls.Add(buttonGetZoneNames);
             Controls.Add(textBoxFireControlPanelConnection);
             Controls.Add(textBox2);
             Controls.Add(textBoxAlarm);
@@ -258,8 +259,8 @@
         private TextBox textBox2;
         private ListBox listBox3;
         private TextBox textBoxFireControlPanelConnection;
-        private Button button1;
-        private Button button2;
+        private Button buttonGetZoneNames;
+        private Button buttonUpdateZoneNames;
         private PictureBox pictureBox1;
         private ListBox listBox5;
         private TextBox textBoxLog;

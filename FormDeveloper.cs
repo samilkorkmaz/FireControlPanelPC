@@ -237,13 +237,11 @@ namespace WinFormsSerial
         private void ParseAndDisplayZoneNames(byte[] buffer)
         {
             listBoxZoneNames.Items.Clear();
-
             for (int i = 0; i < Constants.NB_OF_ZONES; i++)
             {
                 int startIndex = i * Constants.ZONE_NAME_LENGTH;
                 byte[] zoneNameBytes = new byte[Constants.ZONE_NAME_LENGTH];
                 Array.Copy(buffer, startIndex, zoneNameBytes, 0, Constants.ZONE_NAME_LENGTH);
-
                 string zoneName = Encoding.ASCII.GetString(zoneNameBytes).TrimEnd();
                 listBoxZoneNames.Items.Add(zoneName);
             }

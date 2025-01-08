@@ -74,14 +74,26 @@ namespace WinFormsSerial
                             Array.Copy(bufferReceived, receivedData, nBytesReceived);
                             _logCallback($"Emulator received data: {string.Join(", ", receivedData.Select(b => b.ToString()))}");
 
-                            byte[] ackData = [0xAA, 0xBB, 0xCC];
+                            byte[] responseBytes = [0xAA, 0xBB, 0xCC];
+                            var firstByteReceived = receivedData[0];
+                            if (firstByteReceived == Constants.GET_ZONE_NAMES_COMMAND)
+                            {
+                                //_logCallback($"Emulator received GET_ZONE_NAMES_COMMAND");
+                                string zoneNames = "";
+                                for ( int i = 0; i < Constants.NB_OF_ZONES; i++ )
+                                {
+                                    zoneNames += "emulator zone__" + (i+1);
+                                }
+                                //responseBytes = [0xAA, 0xBB, 0xCC, 0xCC];
+                                responseBytes = System.Text.Encoding.ASCII.GetBytes(zoneNames); 
+                            }
                             await Task.Factory.FromAsync(
                                 serialPort.BaseStream.BeginWrite,
                                 serialPort.BaseStream.EndWrite,
-                                ackData, 0, ackData.Length,
+                                responseBytes, 0, responseBytes.Length,
                                 null);
 
-                            _logCallback($"Emulator sent acknowledgement: {string.Join(", ", ackData.Select(b => b.ToString()))}");
+                            _logCallback($"Emulator sent acknowledgement: {string.Join(", ", responseBytes.Select(b => b.ToString()))}");
                         }
                     }
                     catch (TimeoutException)
