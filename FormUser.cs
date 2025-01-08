@@ -90,7 +90,7 @@ namespace WinFormsSerial
 
                     try
                     {
-                        var (responseBytes, bytesRead) = await _serialPortManager.SendCommandAsync([command]);
+                        var (responseBytes, bytesRead) = await _serialPortManager.SendCommandWithTimeoutAsync([command], 1, ct);
                         if (bytesRead > 0)
                         {
                             var responseFirstByte = responseBytes[0];
@@ -114,7 +114,6 @@ namespace WinFormsSerial
 
         private async void FormUser_Shown(object? sender, EventArgs e)
         {
-            AddToLog("Run emulator...");
             _emulator.Run();
 
             var detectedPort = await SerialPortManager.DetectFireControlPanelPortAsync(AddToLog);

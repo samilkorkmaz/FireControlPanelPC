@@ -1,5 +1,6 @@
 ﻿using System.IO.Ports;
 using System.Text;
+using System.Threading;
 
 namespace WinFormsSerial
 {
@@ -68,7 +69,7 @@ namespace WinFormsSerial
             }
         }
 
-        public async Task<(byte[] response, int bytesRead)> SendCommandAsync(byte[] command, int expectedResponseLength = 1)
+        public async Task<(byte[] response, int bytesRead)> SendCommandWithTimeoutAsync(byte[] command, int expectedResponseLength, CancellationToken cancellationToken)
         {
             if (_serialPort == null || !_serialPort.IsOpen)
                 throw new InvalidOperationException("Serial port is not ready");
@@ -79,25 +80,30 @@ namespace WinFormsSerial
                 _serialPort.DiscardInBuffer();
                 _serialPort.DiscardOutBuffer();
 
-                await Task.Factory.FromAsync(
-                    _serialPort.BaseStream.BeginWrite,
-                    _serialPort.BaseStream.EndWrite,
-                    command, 0, command.Length,
-                    null);
+                // Send command with timeout
+                await Task.WhenAll(
+                    Task.Factory.FromAsync(
+                        _serialPort.BaseStream.BeginWrite,
+                        _serialPort.BaseStream.EndWrite,
+                        command, 0, command.Length,
+                        null),
+                    Task.Delay(100, cancellationToken) // Small delay to ensure command is sent
+                );
+
                 _logCallback($"Command sent: {string.Join(", ", command)}");
 
-                await Task.Delay(500); // Non-blocking wait for response
-
                 byte[] responseBytes = new byte[expectedResponseLength];
-                int bytesRead = await Task.Factory.FromAsync(
-                    _serialPort.BaseStream.BeginRead,
-                    _serialPort.BaseStream.EndRead,
-                    responseBytes, 0, expectedResponseLength,
-                    null);
+                int bytesRead = await Task.Run(async () => {
+                    return await Task.Factory.FromAsync(
+                        _serialPort.BaseStream.BeginRead,
+                        _serialPort.BaseStream.EndRead,
+                        responseBytes, 0, expectedResponseLength,
+                        null);
+                }, cancellationToken);
 
                 return (responseBytes, bytesRead);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 throw new IOException($"Serial port {_serialPort.PortName} error: {ex.Message}", ex);
             }
@@ -125,7 +131,7 @@ namespace WinFormsSerial
 
                 try
                 {
-                    var (responseBytes, bytesRead) = await SendCommandAsync([command]);
+                    var (responseBytes, bytesRead) = await SendCommandWithTimeoutAsync([command], 1, communicationCts.Token);
                     if (bytesRead > 0)
                     {
                         _faultAlarmCommandProcessor.ProcessResponse(command, responseBytes);
@@ -151,36 +157,61 @@ namespace WinFormsSerial
             return (lastCommand, lastResponse); // Return the last valid response
         }
 
-        public async Task<byte[]> GetZoneNamesAsync()
+        public async Task<byte[]> GetZoneNamesAsync(int timeoutMs = 1000)
         {
-            var expectedBytesLength = Constants.NB_OF_ZONES * Constants.ZONE_NAME_LENGTH;
-            var (responseBytes, readBytesLength) = await SendCommandAsync([Constants.GET_ZONE_NAMES_COMMAND], expectedBytesLength);
+            using var cts = new CancellationTokenSource(timeoutMs);
+            try
+            {
+                var expectedBytesLength = Constants.NB_OF_ZONES * Constants.ZONE_NAME_LENGTH;
+                var (responseBytes, readBytesLength) = await SendCommandWithTimeoutAsync(
+                    [Constants.GET_ZONE_NAMES_COMMAND],
+                    expectedBytesLength,
+                    cts.Token
+                );
 
-            if (readBytesLength == expectedBytesLength)
-            {
-                return responseBytes;
+                if (readBytesLength == expectedBytesLength)
+                {
+                    return responseBytes;
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"Error when getting zone names command {Constants.GET_ZONE_NAMES_COMMAND}: " +
+                        $"Expected number of bytes {expectedBytesLength} is different from received {readBytesLength}"
+                    );
+                }
             }
-            else
+            catch (OperationCanceledException)
             {
-                throw new InvalidOperationException($"Error when getting zone names command {Constants.GET_ZONE_NAMES_COMMAND}: " +
-                    $"Expected number of bytes {expectedBytesLength} is different from received {readBytesLength}");
+                throw new TimeoutException($"Get zone names operation timed out after {timeoutMs}ms");
             }
         }
 
-        public async Task<byte> UpdateZoneNamesAsync(string[] zoneNames)
+        public async Task<byte> UpdateZoneNamesAsync(string[] zoneNames, int timeoutMs = 1000)
         {
-            byte[] command = BuildZoneNamesUpdateCommand(zoneNames);
-            var (response, _) = await SendCommandAsync(command);
-            var responseFirstByte = response[0];
-            const byte expectedResponse = 245;
-            if (responseFirstByte == expectedResponse)
+            using var cts = new CancellationTokenSource(timeoutMs);
+            try
             {
-                return responseFirstByte;
+                byte[] command = BuildZoneNamesUpdateCommand(zoneNames);
+                var (response, _) = await SendCommandWithTimeoutAsync(command, 1, cts.Token);
+                var responseFirstByte = response[0];
+                const byte expectedResponse = 245;
+
+                if (responseFirstByte == expectedResponse)
+                {
+                    return responseFirstByte;
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"Error for updating zone names command {Constants.SET_ZONE_NAMES_COMMAND}: " +
+                        $"expectedResponse was {expectedResponse}, got {responseFirstByte}"
+                    );
+                }
             }
-            else
+            catch (OperationCanceledException)
             {
-                throw new InvalidOperationException($"Error for updating zone names command {Constants.SET_ZONE_NAMES_COMMAND}: " +
-                    $"expectedResponse was {expectedResponse}, got {responseFirstByte}");
+                throw new TimeoutException($"Update zone names operation timed out after {timeoutMs}ms");
             }
         }
 

@@ -16,8 +16,8 @@ namespace WinFormsSerial
 
         public void Run()
         {
+            _logCallback("Running emulator...");
             _cancellationTokenSource = new CancellationTokenSource();
-
             // Start the emulator on a separate task
             _runningTask = RunEmulatorAsync(_cancellationTokenSource.Token);
         }

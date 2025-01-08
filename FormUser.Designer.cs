@@ -52,6 +52,7 @@
             // 
             // buttonSwitchToDev
             // 
+            buttonSwitchToDev.Enabled = false;
             buttonSwitchToDev.Location = new Point(453, 10);
             buttonSwitchToDev.Name = "buttonSwitchToDev";
             buttonSwitchToDev.Size = new Size(175, 23);
