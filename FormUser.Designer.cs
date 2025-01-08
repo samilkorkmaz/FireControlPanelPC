@@ -44,7 +44,6 @@
             groupBox3 = new GroupBox();
             listBoxControlPanelFaults = new ListBox();
             listBoxZoneNames = new ListBox();
-            listBox9 = new ListBox();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -208,29 +207,17 @@
             // 
             listBoxZoneNames.Font = new Font("Courier New", 9F);
             listBoxZoneNames.FormattingEnabled = true;
-            listBoxZoneNames.Location = new Point(37, 270);
+            listBoxZoneNames.Location = new Point(19, 270);
             listBoxZoneNames.Name = "listBoxZoneNames";
-            listBoxZoneNames.Size = new Size(174, 139);
+            listBoxZoneNames.Size = new Size(192, 139);
             listBoxZoneNames.TabIndex = 20;
-            // 
-            // listBox9
-            // 
-            listBox9.Font = new Font("Courier New", 9F);
-            listBox9.FormattingEnabled = true;
-            listBox9.Items.AddRange(new object[] { "1", "2", "3", "4", "5", "6", "7", "8" });
-            listBox9.Location = new Point(19, 270);
-            listBox9.Name = "listBox9";
-            listBox9.SelectionMode = SelectionMode.None;
-            listBox9.Size = new Size(20, 139);
-            listBox9.TabIndex = 19;
             // 
             // FormUser
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(642, 423);
+            ClientSize = new Size(642, 416);
             Controls.Add(listBoxZoneNames);
-            Controls.Add(listBox9);
             Controls.Add(groupBox3);
             Controls.Add(groupBox2);
             Controls.Add(groupBox1);
@@ -260,12 +247,10 @@
         private Button buttonSwitchToDev;
         private TextBox textBoxAlarm;
         private TextBox textBoxFault;
-        private ListBox listBox3;
         private TextBox textBoxFireControlPanelConnection;
         private Button buttonGetZoneNames;
         private Button buttonUpdateZoneNames;
         private PictureBox pictureBox1;
-        private ListBox listBox5;
         private TextBox textBoxLog;
         private GroupBox groupBox1;
         private ListBox listBoxFireAlarms;
@@ -274,6 +259,5 @@
         private GroupBox groupBox3;
         private ListBox listBoxControlPanelFaults;
         private ListBox listBoxZoneNames;
-        private ListBox listBox9;
     }
 }
