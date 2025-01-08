@@ -108,10 +108,11 @@ namespace WinFormsSerial
             _serialPort?.Dispose();
         }
 
-        public async Task<byte[]> ProcessPeriodicCommandsAsync(CancellationTokenSource communicationCts, int millisecondsDelay = 1000)
+        public async Task<(byte, byte[])> ProcessPeriodicCommandsAsync(CancellationTokenSource communicationCts, int millisecondsDelay = 1000)
         {
             if (_faultAlarmCommandProcessor == null) throw new ArgumentNullException("_faultAlarmCommandProcessor == null");
 
+            byte lastCommand = 0;
             byte[] lastResponse = [];
 
             foreach (byte command in Constants.PERIODIC_COMMANDS_ORDER)
@@ -124,6 +125,7 @@ namespace WinFormsSerial
                     if (bytesRead > 0)
                     {
                         _faultAlarmCommandProcessor.ProcessResponse(command, responseBytes);
+                        lastCommand = command;
                         lastResponse = responseBytes; // Store the response but don't return yet
                     }
                 }
@@ -139,10 +141,10 @@ namespace WinFormsSerial
             }
             catch (OperationCanceledException)
             {
-                return []; // Return empty array if cancelled
+                return (0, []); // Return empty array if cancelled
             }
 
-            return lastResponse; // Return the last valid response
+            return (lastCommand, lastResponse); // Return the last valid response
         }
 
         public async Task<byte[]> GetZoneNamesAsync()

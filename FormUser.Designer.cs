@@ -31,7 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormUser));
             buttonSwitchToDev = new Button();
             textBoxAlarm = new TextBox();
-            textBox2 = new TextBox();
+            textBoxFault = new TextBox();
             textBoxFireControlPanelConnection = new TextBox();
             buttonGetZoneNames = new Button();
             buttonUpdateZoneNames = new Button();
@@ -74,18 +74,18 @@
             textBoxAlarm.Text = "ALARM";
             textBoxAlarm.TextAlign = HorizontalAlignment.Center;
             // 
-            // textBox2
+            // textBoxFault
             // 
-            textBox2.BackColor = Color.White;
-            textBox2.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            textBox2.ForeColor = Color.White;
-            textBox2.Location = new Point(227, 41);
-            textBox2.Name = "textBox2";
-            textBox2.ReadOnly = true;
-            textBox2.Size = new Size(401, 23);
-            textBox2.TabIndex = 2;
-            textBox2.Text = "HATA";
-            textBox2.TextAlign = HorizontalAlignment.Center;
+            textBoxFault.BackColor = Color.White;
+            textBoxFault.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            textBoxFault.ForeColor = Color.White;
+            textBoxFault.Location = new Point(227, 41);
+            textBoxFault.Name = "textBoxFault";
+            textBoxFault.ReadOnly = true;
+            textBoxFault.Size = new Size(401, 23);
+            textBoxFault.TabIndex = 2;
+            textBoxFault.Text = "HATA";
+            textBoxFault.TextAlign = HorizontalAlignment.Center;
             // 
             // textBoxFireControlPanelConnection
             // 
@@ -239,7 +239,7 @@
             Controls.Add(buttonUpdateZoneNames);
             Controls.Add(buttonGetZoneNames);
             Controls.Add(textBoxFireControlPanelConnection);
-            Controls.Add(textBox2);
+            Controls.Add(textBoxFault);
             Controls.Add(textBoxAlarm);
             Controls.Add(buttonSwitchToDev);
             FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -259,7 +259,7 @@
 
         private Button buttonSwitchToDev;
         private TextBox textBoxAlarm;
-        private TextBox textBox2;
+        private TextBox textBoxFault;
         private ListBox listBox3;
         private TextBox textBoxFireControlPanelConnection;
         private Button buttonGetZoneNames;

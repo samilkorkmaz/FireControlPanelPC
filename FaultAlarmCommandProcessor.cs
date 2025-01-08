@@ -53,9 +53,9 @@
                 _logCallback($"Zone line fault in zones: {GetZoneWithProblemsAsString(responseFirstByte)}");
         }
 
-        private void ProcessControlPanelFault(byte response)
+        private void ProcessControlPanelFault(byte responseFirstByte)
         {
-            if (response == 0)
+            if (responseFirstByte == 0)
             {
                 _logCallback("No control panel fault.");
                 return;
@@ -76,7 +76,7 @@
 
             foreach (var fault in faults)
             {
-                if ((response & fault.Key) != 0)
+                if ((responseFirstByte & fault.Key) != 0)
                     _logCallback(fault.Value);
             }
         }

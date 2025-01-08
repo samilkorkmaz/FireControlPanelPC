@@ -19,6 +19,10 @@ namespace WinFormsSerial
             _zoneNameEditor = new ZoneNameEditor(listBoxZoneNames);
             Controls.Add(_zoneNameEditor.EditBoxControl);
 
+            listBoxFireAlarms.Items.Clear();
+            listBoxZoneFaults.Items.Clear();
+            listBoxControlPanelFaults.Items.Clear();
+
             AddToLog("Program başladı.");
             try
             {
@@ -28,14 +32,14 @@ namespace WinFormsSerial
                    $"Revision: {osVersion.Revision}");
 
                 Controls.Add(_zoneNameEditor.EditBoxControl);
-                for (int i = 0; i < Constants.NB_OF_ZONES; i++)
+                /*for (int i = 0; i < Constants.NB_OF_ZONES; i++)
                 {
                     listBoxFireAlarms.Items.Add("Alarm " + (i + 1));
                     listBoxZoneFaults.Items.Add("Zone Fault " + (i + 1));
                     listBoxZoneNames.Items.Add("Zone Name " + (i + 1));
                 }
                 listBoxControlPanelFaults.Items.AddRange(new string[] { "Batarya yok", "Batarya zayıf", "Şebeke yok", "Şarj zayıf", "Siren1 Arıza", "Siren2 Arıza",
-                "Çıkış arıza", "Toprak arıza" });
+                "Çıkış arıza", "Toprak arıza" });*/
 
                 Shown += FormUser_Shown;
             }
@@ -77,37 +81,77 @@ namespace WinFormsSerial
                 await _serialPortManager.ConnectAsync(detectedPort);
                 AddToLog($"Panel saniyede 1 sorgulanıyor...");
                 var communicationCts = new CancellationTokenSource();
-                /*while (_serialPortManager.IsConnected)
+                while (_serialPortManager.IsConnected)
                 {
-                    byte[] response = await _serialPortManager.ProcessPeriodicCommandsAsync(communicationCts, 1000);
-                    if (response.Length > 0)
+                    //var (command, responseBytes) = await _serialPortManager.ProcessPeriodicCommandsAsync(communicationCts, 1000);
+                    foreach (byte command in Constants.PERIODIC_COMMANDS_ORDER)
                     {
-                        var responseFirstByte = response[0];
-                        UpdateUI(responseFirstByte);
-                    }                   
-                }*/
+                        if (communicationCts.Token.IsCancellationRequested) break;
+
+                        try
+                        {
+                            var (responseBytes, bytesRead) = await _serialPortManager.SendCommandAsync([command]);
+                            if (bytesRead > 0)
+                            {
+                                var responseFirstByte = responseBytes[0];
+                                UpdateUI(command, responseFirstByte);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            AddToLog($"Command {command} hatası: {ex.Message}");
+                        }
+                    }
+                }
             }
         }
 
-        private void UpdateUI(byte responseFirstByte)
+        private void UpdateUI(byte command, byte responseFirstByte)
         {
             if (responseFirstByte == 0)
             {
                 textBoxAlarm.BackColor = Color.White;
                 textBoxAlarm.Text = "";
                 listBoxFireAlarms.Items.Clear();
+
+                textBoxFault.BackColor = Color.White;
+                textBoxFault.Text = "";
+                listBoxZoneFaults.Items.Clear();
+                listBoxControlPanelFaults.Items.Clear();
             }
             else
             {
-                textBoxAlarm.BackColor = Color.Red;
-                textBoxAlarm.Text = "ALARM";
-                List<int> problemZones = FaultAlarmCommandProcessor.GetZonesWithProblems(responseFirstByte);
-                //AddToLog($"Problem zones detected: {string.Join(", ", problemZones)}");
-                listBoxFireAlarms.Items.Clear();
+                if (command == Constants.IS_THERE_FIRE_ALARM) {
+                    textBoxAlarm.BackColor = Color.Red;
+                    textBoxAlarm.Text = "ALARM";
+                    List<int> problemZones = FaultAlarmCommandProcessor.GetZonesWithProblems(responseFirstByte);
+                    //AddToLog($"Problem zones detected: {string.Join(", ", problemZones)}");
+                    listBoxFireAlarms.Items.Clear();
 
-                // Convert integers to proper string format
-                string[] alarmItems = problemZones.Select(zone => $"Alarm {zone + 1}").ToArray();
-                listBoxFireAlarms.Items.AddRange(alarmItems);
+                    // Convert integers to proper string format
+                    string[] alarmItems = problemZones.Select(zone => $"Alarm {zone + 1}").ToArray();
+                    listBoxFireAlarms.Items.AddRange(alarmItems);
+                }
+                else if (command == Constants.IS_THERE_ZONE_LINE_FAULT)
+                {
+                    textBoxFault.BackColor = Color.Yellow;
+                    textBoxFault.ForeColor = Color.Red;
+                    textBoxFault.Text = "HATA";
+                    List<int> problemZones = FaultAlarmCommandProcessor.GetZonesWithProblems(responseFirstByte);
+                    listBoxZoneFaults.Items.Clear();
+                    string[] faultItems = problemZones.Select(zone => $"Bölge Hatası {zone + 1}").ToArray();
+                    listBoxZoneFaults.Items.AddRange(faultItems);
+                }
+                else if (command == Constants.IS_THERE_CONTROL_PANEL_FAULT)
+                {
+                    textBoxFault.BackColor = Color.Yellow;
+                    textBoxFault.ForeColor = Color.Red;
+                    textBoxFault.Text = "HATA";
+                    List<int> problemZones = FaultAlarmCommandProcessor.GetZonesWithProblems(responseFirstByte);
+                    listBoxControlPanelFaults.Items.Clear();
+                    string[] faultItems = problemZones.Select(zone => $"Panel Hatası {zone + 1}").ToArray();
+                    listBoxControlPanelFaults.Items.AddRange(faultItems);
+                }
             }
         }
 
@@ -118,8 +162,11 @@ namespace WinFormsSerial
                 BeginInvoke(() => AddToLog(message));
                 return;
             }
-            textBoxLog?.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ": " + message + Environment.NewLine); // "?" is here to prevent exception on window close, which disposes textBoxLog
-            textBoxLog?.ScrollToCaret();
+            if (!textBoxLog.IsDisposed) // To prevent exception on window close, which disposes textBoxLog
+            {
+                textBoxLog.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ": " + message + Environment.NewLine);
+                textBoxLog.ScrollToCaret();
+            }
         }
 
         private void buttonSwitchToDev_Click(object sender, EventArgs e)
