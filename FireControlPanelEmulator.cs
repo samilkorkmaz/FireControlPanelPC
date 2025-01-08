@@ -61,6 +61,10 @@ namespace WinFormsSerial
                 {
                     try
                     {
+                        // Flush buffers before sending new command
+                        serialPort.DiscardInBuffer();
+                        serialPort.DiscardOutBuffer();
+
                         byte[] bufferReceived = new byte[1024];
                         int nBytesReceived = await Task.Factory.FromAsync(
                             serialPort.BaseStream.BeginRead,
@@ -80,15 +84,18 @@ namespace WinFormsSerial
                             {
                                 //_logCallback($"Emulator received GET_ZONE_NAMES_COMMAND");
                                 string zoneNames = "";
-                                for ( int i = 0; i < Constants.NB_OF_ZONES; i++ )
+                                for (int i = 0; i < Constants.NB_OF_ZONES; i++)
                                 {
-                                    zoneNames += "emulator zone__" + (i+1);
+                                    zoneNames += "emulator zone__" + (i + 1);
                                 }
-                                //responseBytes = [0xAA, 0xBB, 0xCC, 0xCC];
-                                responseBytes = System.Text.Encoding.ASCII.GetBytes(zoneNames); 
-                            } else
+                                responseBytes = System.Text.Encoding.ASCII.GetBytes(zoneNames);
+                            }
+                            else
                             {
-                                responseBytes = [0x01, 0x02, 0x03];
+                                Random random = new Random();
+                                responseBytes = [(random.NextDouble() < 0.3) ? (byte)0 : (byte)random.Next(1, 256)];
+                                //responseBytes = [0xAA];
+                                //responseBytes = [0x01, 0x02, 0x03];
                             }
                             await Task.Factory.FromAsync(
                                 serialPort.BaseStream.BeginWrite,

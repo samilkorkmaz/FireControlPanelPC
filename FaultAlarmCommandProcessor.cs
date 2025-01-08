@@ -81,6 +81,30 @@
             }
         }
 
+        public static List<string> GetFireControlPanelFaults(byte responseFirstByte)
+        {
+            var controlPanelFaults = new List<string>();
+
+            var faults = new Dictionary<byte, string>
+            {
+                { 0b00000001, "Batarya yok" },
+                { 0b00000010, "Batarya zayıf" },
+                { 0b00000100, "Şebeke yok" },
+                { 0b00001000, "Şarj zayıf" },
+                { 0b00010000, "Siren1 Arıza" },
+                { 0b00100000, "Siren2 Arıza" },
+                { 0b01000000, "Çıkış arıza" },
+                { 0b10000000, "Toprak arıza" }
+            };
+
+            foreach (var fault in faults)
+            {
+                if ((responseFirstByte & fault.Key) != 0)
+                    controlPanelFaults.Add(fault.Value);
+            }
+            return controlPanelFaults;
+        }
+
         private static string GetZoneWithProblemsAsString(byte responseFirstByte)
         {
             List<string> zonesStr = GetZonesWithProblems(responseFirstByte).Select(x => x.ToString()).ToList();            
