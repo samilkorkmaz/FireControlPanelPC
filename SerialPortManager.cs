@@ -227,9 +227,9 @@ namespace WinFormsSerial
                         try
                         {
                             testPort.Open();
-                            testPort.Write(new byte[] { Constants.IS_THERE_FIRE_ALARM }, 0, 1);
+                            testPort.Write([Constants.IS_THERE_FIRE_ALARM], 0, 1);
 
-                            byte[] response = new byte[1];
+                            var response = new byte[1];
                             int bytesRead = testPort.Read(response, 0, 1);
                             return bytesRead == 1;
                         }
