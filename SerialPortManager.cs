@@ -9,6 +9,7 @@ namespace WinFormsSerial
         private SerialPort? _serialPort;
         private readonly FaultAlarmCommandProcessor? _faultAlarmCommandProcessor;
         private readonly Action<string> _logCallback;
+        private bool _disposed;
 
         public bool IsConnected => _serialPort?.IsOpen ?? false;
 
@@ -69,38 +70,78 @@ namespace WinFormsSerial
             }
         }
 
-        public async Task<(byte[] response, int bytesRead)> SendCommandWithTimeoutAsync(byte[] command, int expectedResponseLength, CancellationToken cancellationToken)
+        public async Task<(byte[] response, int bytesRead)> SendCommandWithTimeoutAsync(byte[] command, int expectedResponseLength, int timeoutMs=1000)
         {
             if (_serialPort == null || !_serialPort.IsOpen)
                 throw new InvalidOperationException("Serial port is not ready");
 
             try
             {
+                using var cts = new CancellationTokenSource(timeoutMs);
+
                 // Flush buffers before sending new command
                 _serialPort.DiscardInBuffer();
                 _serialPort.DiscardOutBuffer();
 
-                // Send command with timeout
-                await Task.WhenAll(
-                    Task.Factory.FromAsync(
-                        _serialPort.BaseStream.BeginWrite,
-                        _serialPort.BaseStream.EndWrite,
-                        command, 0, command.Length,
-                        null),
-                    Task.Delay(100, cancellationToken) // Small delay to ensure command is sent
+                // Create the write task
+                var writeTask = Task.Factory.FromAsync(
+                    _serialPort.BaseStream.BeginWrite,
+                    _serialPort.BaseStream.EndWrite,
+                    command, 0, command.Length,
+                    null
                 );
 
+                // Wait for either the write to complete or timeout
+                var completedWriteTask = await Task.WhenAny(
+                    writeTask,
+                    Task.Delay(timeoutMs, cts.Token)
+                );
+
+                if (completedWriteTask != writeTask)
+                {
+                    // If Task.Delay completed first, we timed out
+                    if (writeTask.AsyncState is IAsyncResult asyncResult)
+                    {
+                        _serialPort.BaseStream.EndWrite(asyncResult);
+                    }
+                    throw new TimeoutException($"Write operation timed out after {timeoutMs}ms");
+                }
+
+                await writeTask; // Ensure write completes and propagate any errors
                 _logCallback($"Command sent: {string.Join(", ", command)}");
 
-                byte[] responseBytes = new byte[expectedResponseLength];
-                int bytesRead = await Task.Run(async () => {
-                    return await Task.Factory.FromAsync(
-                        _serialPort.BaseStream.BeginRead,
-                        _serialPort.BaseStream.EndRead,
-                        responseBytes, 0, expectedResponseLength,
-                        null);
-                }, cancellationToken);
+                // Small delay after successful write
+                await Task.Delay(100, cts.Token);
 
+                byte[] responseBytes = new byte[expectedResponseLength];
+
+                // Create the read task
+                var readTask = Task.Factory.FromAsync(
+                    _serialPort.BaseStream.BeginRead,
+                    _serialPort.BaseStream.EndRead,
+                    responseBytes,
+                    0,
+                    expectedResponseLength,
+                    null
+                );
+
+                // Wait for either the read to complete or timeout
+                var completedReadTask = await Task.WhenAny(
+                    readTask,
+                    Task.Delay(timeoutMs, cts.Token)
+                );
+
+                if (completedReadTask != readTask)
+                {
+                    // If Task.Delay completed first, we timed out
+                    if (readTask.AsyncState is IAsyncResult asyncResult)
+                    {
+                        _serialPort.BaseStream.EndRead(asyncResult);
+                    }
+                    throw new TimeoutException($"Read operation timed out after {timeoutMs}ms");
+                }
+
+                int bytesRead = await readTask;
                 return (responseBytes, bytesRead);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -109,13 +150,33 @@ namespace WinFormsSerial
             }
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
+            if (_disposed) return;
+
             if (_serialPort?.IsOpen == true)
             {
-                _serialPort.Close();
+                try
+                {
+                    _serialPort.DiscardInBuffer();
+                    _serialPort.DiscardOutBuffer();
+                    _serialPort.Close();
+                    await Task.Delay(100); // Give port time to close
+                }
+                catch (Exception ex)
+                {
+                    _logCallback?.Invoke($"Error during port cleanup: {ex.Message}");
+                }
             }
+
             _serialPort?.Dispose();
+            _disposed = true;
+        }
+
+        public void Dispose()
+        {
+            // For backwards compatibility, wait for async dispose
+            DisposeAsync().AsTask().Wait();
         }
 
         public async Task<(byte, byte[])> ProcessPeriodicCommandsAsync(CancellationTokenSource communicationCts, int millisecondsDelay = 1000)
@@ -131,7 +192,7 @@ namespace WinFormsSerial
 
                 try
                 {
-                    var (responseBytes, bytesRead) = await SendCommandWithTimeoutAsync([command], 1, communicationCts.Token);
+                    var (responseBytes, bytesRead) = await SendCommandWithTimeoutAsync([command], 1);
                     if (bytesRead > 0)
                     {
                         _faultAlarmCommandProcessor.ProcessResponse(command, responseBytes);
@@ -163,11 +224,7 @@ namespace WinFormsSerial
             try
             {
                 var expectedBytesLength = Constants.NB_OF_ZONES * Constants.ZONE_NAME_LENGTH;
-                var (responseBytes, readBytesLength) = await SendCommandWithTimeoutAsync(
-                    [Constants.GET_ZONE_NAMES_COMMAND],
-                    expectedBytesLength,
-                    cts.Token
-                );
+                var (responseBytes, readBytesLength) = await SendCommandWithTimeoutAsync([Constants.GET_ZONE_NAMES_COMMAND], expectedBytesLength);
 
                 if (readBytesLength == expectedBytesLength)
                 {
@@ -193,7 +250,7 @@ namespace WinFormsSerial
             try
             {
                 byte[] command = BuildZoneNamesUpdateCommand(zoneNames);
-                var (response, _) = await SendCommandWithTimeoutAsync(command, 1, cts.Token);
+                var (response, _) = await SendCommandWithTimeoutAsync(command, 1);
                 var responseFirstByte = response[0];
                 const byte expectedResponse = 245;
 

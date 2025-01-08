@@ -90,7 +90,7 @@ namespace WinFormsSerial
 
                     try
                     {
-                        var (responseBytes, bytesRead) = await _serialPortManager.SendCommandWithTimeoutAsync([command], 1, ct);
+                        var (responseBytes, bytesRead) = await _serialPortManager.SendCommandWithTimeoutAsync([command], 1);
                         if (bytesRead > 0)
                         {
                             var responseFirstByte = responseBytes[0];
@@ -106,15 +106,52 @@ namespace WinFormsSerial
             }
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
+        private bool _isClosing;  // Track cleanup state
+        private bool _disposed;   // Track if we've already disposed
+        protected override async void OnFormClosing(FormClosingEventArgs e)
         {
-            _serialPortManager?.Dispose();
-            base.OnFormClosing(e);
+            // Proceed with normal closing if:
+            // - We're already in the closing process, or
+            // - We've already disposed resources, or
+            // - We have no serial port manager to cleanup
+            if (_isClosing || _disposed || _serialPortManager == null)
+            {
+                base.OnFormClosing(e);
+                return;
+            }
+
+            try
+            {
+                _isClosing = true;
+                e.Cancel = true;  // Cancel this close attempt
+
+                // Stop periodic commands if running
+                await PausePeriodicCommandsAsync();
+
+                // Dispose the serial port manager
+                await _serialPortManager.DisposeAsync();
+                _disposed = true;
+
+                // Now close the form without triggering another cleanup
+                BeginInvoke(() =>
+                {
+                    _isClosing = false;  // Reset closing flag
+                    Close();
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error during cleanup: {ex.Message}", "Cleanup Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _isClosing = false;
+                _disposed = true;  // Consider it disposed even on error
+                BeginInvoke(() => Close());
+            }
         }
 
         private async void FormUser_Shown(object? sender, EventArgs e)
         {
-            _emulator.Run();
+            //_emulator.Run();
 
             var detectedPort = await SerialPortManager.DetectFireControlPanelPortAsync(AddToLog);
             if (string.IsNullOrEmpty(detectedPort))
