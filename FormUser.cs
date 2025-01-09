@@ -102,7 +102,7 @@ namespace WinFormsSerial
                         AddToLog($"Command {command} hatası: {ex.Message}");
                     }
                 }
-                break;
+                //break;
                 await Task.Delay(1000, ct); // 1 second delay between cycles
             }
         }
@@ -152,7 +152,7 @@ namespace WinFormsSerial
 
         private async void FormUser_Shown(object? sender, EventArgs e)
         {
-            _emulator.Run();
+            //_emulator.Run();
 
             var detectedPort = await SerialPortManager.DetectFireControlPanelPortAsync(AddToLog);
             if (string.IsNullOrEmpty(detectedPort))
