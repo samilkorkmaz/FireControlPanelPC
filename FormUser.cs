@@ -150,9 +150,7 @@ namespace WinFormsSerial
         }
 
         private async void FormUser_Shown(object? sender, EventArgs e)
-        {
-            _emulator.Run();
-
+        {           
             var detectedPort = await SerialPortManager.DetectFireControlPanelPortAsync(AddToLog);
             if (string.IsNullOrEmpty(detectedPort))
             {
@@ -193,7 +191,8 @@ namespace WinFormsSerial
             }
             else
             {
-                if (command == Constants.IS_THERE_FIRE_ALARM) {
+                if (command == Constants.IS_THERE_FIRE_ALARM)
+                {
                     labelAlarm.BackColor = Color.Red;
                     labelAlarm.ForeColor = Color.White;
                     labelAlarm.Text = "ALARM";
@@ -239,7 +238,7 @@ namespace WinFormsSerial
             }
             if (!textBoxLog.IsDisposed) // To prevent exception on window close, which disposes textBoxLog
             {
-                textBoxLog.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ": " + message + Environment.NewLine);
+                textBoxLog.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + ": " + message + Environment.NewLine);
                 textBoxLog.ScrollToCaret();
             }
         }
@@ -328,6 +327,17 @@ namespace WinFormsSerial
                 {
                     await StartPeriodicCommandsAsync();
                 }
+            }
+        }
+
+        private async void checkBoxEmulator_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxEmulator.Checked)
+            {
+                _emulator.Run();
+            } else
+            {
+                await _emulator.StopAsync();
             }
         }
     }

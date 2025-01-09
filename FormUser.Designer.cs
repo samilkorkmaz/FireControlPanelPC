@@ -44,6 +44,7 @@
             labelAlarm = new Label();
             labelFault = new Label();
             labelFireControlPanelConnection = new Label();
+            checkBoxEmulator = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -179,9 +180,9 @@
             labelAlarm.BackColor = Color.White;
             labelAlarm.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             labelAlarm.ForeColor = Color.White;
-            labelAlarm.Location = new Point(19, 41);
+            labelAlarm.Location = new Point(112, 41);
             labelAlarm.Name = "labelAlarm";
-            labelAlarm.Size = new Size(192, 23);
+            labelAlarm.Size = new Size(99, 23);
             labelAlarm.TabIndex = 21;
             labelAlarm.Text = "ALARM";
             labelAlarm.TextAlign = ContentAlignment.MiddleCenter;
@@ -210,11 +211,23 @@
             labelFireControlPanelConnection.Text = "BAĞLANTI KONTROL...";
             labelFireControlPanelConnection.TextAlign = ContentAlignment.MiddleCenter;
             // 
+            // checkBoxEmulator
+            // 
+            checkBoxEmulator.AutoSize = true;
+            checkBoxEmulator.Location = new Point(19, 41);
+            checkBoxEmulator.Name = "checkBoxEmulator";
+            checkBoxEmulator.Size = new Size(74, 19);
+            checkBoxEmulator.TabIndex = 24;
+            checkBoxEmulator.Text = "Emulator";
+            checkBoxEmulator.UseVisualStyleBackColor = true;
+            checkBoxEmulator.CheckedChanged += checkBoxEmulator_CheckedChanged;
+            // 
             // FormUser
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(642, 416);
+            Controls.Add(checkBoxEmulator);
             Controls.Add(labelFireControlPanelConnection);
             Controls.Add(labelFault);
             Controls.Add(labelAlarm);
@@ -257,5 +270,6 @@
         private Label labelAlarm;
         private Label labelFault;
         private Label labelFireControlPanelConnection;
+        private CheckBox checkBoxEmulator;
     }
 }
