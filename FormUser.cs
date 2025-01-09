@@ -177,34 +177,36 @@ namespace WinFormsSerial
 
         private void UpdateUI(byte command, byte responseFirstByte)
         {
-            if (responseFirstByte == 0)
+            // Instead of clearing everything on 0 response, handle each command separately
+            if (command == Constants.IS_THERE_FIRE_ALARM)
             {
-                labelAlarm.BackColor = Color.White;
-                labelAlarm.ForeColor = Color.White;
-                labelAlarm.Text = "";
-                listBoxFireAlarms.Items.Clear();
-
-                labelFault.BackColor = Color.White;
-                labelFault.Text = "";
-                listBoxZoneFaults.Items.Clear();
-                listBoxControlPanelFaults.Items.Clear();
-            }
-            else
-            {
-                if (command == Constants.IS_THERE_FIRE_ALARM)
+                if (responseFirstByte == 0)
+                {
+                    labelAlarm.BackColor = Color.White;
+                    labelAlarm.ForeColor = Color.White;
+                    labelAlarm.Text = "";
+                    listBoxFireAlarms.Items.Clear();
+                }
+                else
                 {
                     labelAlarm.BackColor = Color.Red;
                     labelAlarm.ForeColor = Color.White;
                     labelAlarm.Text = "ALARM";
                     List<int> problemZones = FaultAlarmCommandProcessor.GetZonesWithProblems(responseFirstByte);
-                    //AddToLog($"Problem zones detected: {string.Join(", ", problemZones)}");
                     listBoxFireAlarms.Items.Clear();
-
-                    // Convert integers to proper string format
                     string[] alarmItems = problemZones.Select(zone => $"Alarm {zone + 1}").ToArray();
                     listBoxFireAlarms.Items.AddRange(alarmItems);
                 }
-                else if (command == Constants.IS_THERE_ZONE_LINE_FAULT)
+            }
+            else if (command == Constants.IS_THERE_ZONE_LINE_FAULT)
+            {
+                if (responseFirstByte == 0)
+                {
+                    labelFault.BackColor = Color.White;
+                    labelFault.Text = "";
+                    listBoxZoneFaults.Items.Clear();
+                }
+                else
                 {
                     labelFault.BackColor = Color.Yellow;
                     labelFault.ForeColor = Color.Red;
@@ -214,7 +216,20 @@ namespace WinFormsSerial
                     string[] faultItems = problemZones.Select(zone => $"Bölge Hatası {zone + 1}").ToArray();
                     listBoxZoneFaults.Items.AddRange(faultItems);
                 }
-                else if (command == Constants.IS_THERE_CONTROL_PANEL_FAULT)
+            }
+            else if (command == Constants.IS_THERE_CONTROL_PANEL_FAULT)
+            {
+                if (responseFirstByte == 0)
+                {
+                    // Only clear control panel faults if no other faults exist
+                    if (listBoxZoneFaults.Items.Count == 0)
+                    {
+                        labelFault.BackColor = Color.White;
+                        labelFault.Text = "";
+                    }
+                    listBoxControlPanelFaults.Items.Clear();
+                }
+                else
                 {
                     labelFault.BackColor = Color.Yellow;
                     labelFault.ForeColor = Color.Red;
