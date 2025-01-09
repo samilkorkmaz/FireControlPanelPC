@@ -96,14 +96,13 @@ namespace WinFormsSerial
                             var responseFirstByte = responseBytes[0];
                             UpdateUI(command, responseFirstByte);
                         }
+                        await Task.Delay(1000, ct); // Add delay after each command
                     }
                     catch (Exception ex)
                     {
                         AddToLog($"Command {command} hatası: {ex.Message}");
                     }
                 }
-                //break;
-                await Task.Delay(1000, ct); // 1 second delay between cycles
             }
         }
 
@@ -152,7 +151,7 @@ namespace WinFormsSerial
 
         private async void FormUser_Shown(object? sender, EventArgs e)
         {
-            //_emulator.Run();
+            _emulator.Run();
 
             var detectedPort = await SerialPortManager.DetectFireControlPanelPortAsync(AddToLog);
             if (string.IsNullOrEmpty(detectedPort))
