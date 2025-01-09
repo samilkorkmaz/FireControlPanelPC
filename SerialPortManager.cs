@@ -111,7 +111,7 @@ namespace WinFormsSerial
                 _logCallback($"Command sent: {string.Join(", ", command)}");
 
                 // Small delay after successful write
-                await Task.Delay(100, cts.Token);
+                await Task.Delay(300, cts.Token);
 
                 byte[] responseBytes = new byte[expectedResponseLength];
 
