@@ -102,7 +102,7 @@
             textBoxLog.Name = "textBoxLog";
             textBoxLog.ReadOnly = true;
             textBoxLog.ScrollBars = ScrollBars.Both;
-            textBoxLog.Size = new Size(401, 168);
+            textBoxLog.Size = new Size(401, 455);
             textBoxLog.TabIndex = 14;
             textBoxLog.Text = "Log";
             // 
@@ -226,7 +226,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(642, 416);
+            ClientSize = new Size(642, 708);
             Controls.Add(checkBoxEmulator);
             Controls.Add(labelFireControlPanelConnection);
             Controls.Add(labelFault);

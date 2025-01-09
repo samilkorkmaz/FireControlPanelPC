@@ -82,6 +82,7 @@ namespace WinFormsSerial
 
         private async Task RunPeriodicCommandsAsync(CancellationToken ct)
         {
+            AddToLog($"Panel saniyede 1 sorgulanıyor...");
             while (!ct.IsCancellationRequested && _serialPortManager.IsConnected)
             {
                 foreach (byte command in Constants.PERIODIC_COMMANDS_ORDER)
@@ -150,7 +151,8 @@ namespace WinFormsSerial
         }
 
         private async void FormUser_Shown(object? sender, EventArgs e)
-        {           
+        {
+            //_emulator.Run();
             var detectedPort = await SerialPortManager.DetectFireControlPanelPortAsync(AddToLog);
             if (string.IsNullOrEmpty(detectedPort))
             {
@@ -168,9 +170,6 @@ namespace WinFormsSerial
 
                 AddToLog($"Panel ile bağlantı kuruluyor...");
                 await _serialPortManager.ConnectAsync(detectedPort);
-                AddToLog($"Panel saniyede 1 sorgulanıyor...");
-
-                // Start periodic commands
                 await StartPeriodicCommandsAsync();
             }
         }
