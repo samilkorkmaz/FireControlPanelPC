@@ -142,6 +142,7 @@ namespace WinFormsSerial
                 }
 
                 int bytesRead = await readTask;
+                _logCallback($"responseBytes: {string.Join(", ", responseBytes)}");
                 return (responseBytes, bytesRead);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
