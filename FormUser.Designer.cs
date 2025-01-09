@@ -30,9 +30,6 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormUser));
             buttonSwitchToDev = new Button();
-            textBoxAlarm = new TextBox();
-            textBoxFault = new TextBox();
-            textBoxFireControlPanelConnection = new TextBox();
             buttonGetZoneNames = new Button();
             buttonUpdateZoneNames = new Button();
             pictureBox1 = new PictureBox();
@@ -44,6 +41,9 @@
             groupBox3 = new GroupBox();
             listBoxControlPanelFaults = new ListBox();
             listBoxZoneNames = new ListBox();
+            labelAlarm = new Label();
+            labelFault = new Label();
+            labelFireControlPanelConnection = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -60,45 +60,6 @@
             buttonSwitchToDev.Text = "Switch to developer mode";
             buttonSwitchToDev.UseVisualStyleBackColor = true;
             buttonSwitchToDev.Click += buttonSwitchToDev_Click;
-            // 
-            // textBoxAlarm
-            // 
-            textBoxAlarm.BackColor = Color.White;
-            textBoxAlarm.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            textBoxAlarm.ForeColor = Color.White;
-            textBoxAlarm.Location = new Point(12, 41);
-            textBoxAlarm.Name = "textBoxAlarm";
-            textBoxAlarm.ReadOnly = true;
-            textBoxAlarm.Size = new Size(206, 23);
-            textBoxAlarm.TabIndex = 1;
-            textBoxAlarm.Text = "ALARM";
-            textBoxAlarm.TextAlign = HorizontalAlignment.Center;
-            // 
-            // textBoxFault
-            // 
-            textBoxFault.BackColor = Color.White;
-            textBoxFault.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            textBoxFault.ForeColor = Color.White;
-            textBoxFault.Location = new Point(227, 41);
-            textBoxFault.Name = "textBoxFault";
-            textBoxFault.ReadOnly = true;
-            textBoxFault.Size = new Size(401, 23);
-            textBoxFault.TabIndex = 2;
-            textBoxFault.Text = "HATA";
-            textBoxFault.TextAlign = HorizontalAlignment.Center;
-            // 
-            // textBoxFireControlPanelConnection
-            // 
-            textBoxFireControlPanelConnection.BackColor = Color.Black;
-            textBoxFireControlPanelConnection.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            textBoxFireControlPanelConnection.ForeColor = Color.White;
-            textBoxFireControlPanelConnection.Location = new Point(12, 10);
-            textBoxFireControlPanelConnection.Name = "textBoxFireControlPanelConnection";
-            textBoxFireControlPanelConnection.ReadOnly = true;
-            textBoxFireControlPanelConnection.Size = new Size(206, 23);
-            textBoxFireControlPanelConnection.TabIndex = 8;
-            textBoxFireControlPanelConnection.Text = "BAĞLANTI KONTROL...";
-            textBoxFireControlPanelConnection.TextAlign = HorizontalAlignment.Center;
             // 
             // buttonGetZoneNames
             // 
@@ -213,11 +174,50 @@
             listBoxZoneNames.Size = new Size(192, 139);
             listBoxZoneNames.TabIndex = 20;
             // 
+            // labelAlarm
+            // 
+            labelAlarm.BackColor = Color.White;
+            labelAlarm.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            labelAlarm.ForeColor = Color.White;
+            labelAlarm.Location = new Point(19, 41);
+            labelAlarm.Name = "labelAlarm";
+            labelAlarm.Size = new Size(192, 23);
+            labelAlarm.TabIndex = 21;
+            labelAlarm.Text = "ALARM";
+            labelAlarm.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // labelFault
+            // 
+            labelFault.BackColor = Color.White;
+            labelFault.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            labelFault.ForeColor = Color.White;
+            labelFault.Location = new Point(233, 41);
+            labelFault.Name = "labelFault";
+            labelFault.Size = new Size(386, 23);
+            labelFault.TabIndex = 22;
+            labelFault.Text = "HATA";
+            labelFault.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // labelFireControlPanelConnection
+            // 
+            labelFireControlPanelConnection.BackColor = Color.Black;
+            labelFireControlPanelConnection.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            labelFireControlPanelConnection.ForeColor = Color.White;
+            labelFireControlPanelConnection.Location = new Point(19, 10);
+            labelFireControlPanelConnection.Name = "labelFireControlPanelConnection";
+            labelFireControlPanelConnection.Size = new Size(192, 23);
+            labelFireControlPanelConnection.TabIndex = 23;
+            labelFireControlPanelConnection.Text = "BAĞLANTI KONTROL...";
+            labelFireControlPanelConnection.TextAlign = ContentAlignment.MiddleCenter;
+            // 
             // FormUser
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(642, 416);
+            Controls.Add(labelFireControlPanelConnection);
+            Controls.Add(labelFault);
+            Controls.Add(labelAlarm);
             Controls.Add(listBoxZoneNames);
             Controls.Add(groupBox3);
             Controls.Add(groupBox2);
@@ -226,9 +226,6 @@
             Controls.Add(pictureBox1);
             Controls.Add(buttonUpdateZoneNames);
             Controls.Add(buttonGetZoneNames);
-            Controls.Add(textBoxFireControlPanelConnection);
-            Controls.Add(textBoxFault);
-            Controls.Add(textBoxAlarm);
             Controls.Add(buttonSwitchToDev);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -246,9 +243,6 @@
         #endregion
 
         private Button buttonSwitchToDev;
-        private TextBox textBoxAlarm;
-        private TextBox textBoxFault;
-        private TextBox textBoxFireControlPanelConnection;
         private Button buttonGetZoneNames;
         private Button buttonUpdateZoneNames;
         private PictureBox pictureBox1;
@@ -260,5 +254,8 @@
         private GroupBox groupBox3;
         private ListBox listBoxControlPanelFaults;
         private ListBox listBoxZoneNames;
+        private Label labelAlarm;
+        private Label labelFault;
+        private Label labelFireControlPanelConnection;
     }
 }

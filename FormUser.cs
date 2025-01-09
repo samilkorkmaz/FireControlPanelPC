@@ -102,6 +102,7 @@ namespace WinFormsSerial
                         AddToLog($"Command {command} hatası: {ex.Message}");
                     }
                 }
+                break;
                 await Task.Delay(1000, ct); // 1 second delay between cycles
             }
         }
@@ -151,20 +152,20 @@ namespace WinFormsSerial
 
         private async void FormUser_Shown(object? sender, EventArgs e)
         {
-            //_emulator.Run();
+            _emulator.Run();
 
             var detectedPort = await SerialPortManager.DetectFireControlPanelPortAsync(AddToLog);
             if (string.IsNullOrEmpty(detectedPort))
             {
                 AddToLog($"Yangın alarm paneli ile iletişim kurulamadı! Panelin PC'ye bağlantısını kontrol edin.");
-                textBoxFireControlPanelConnection.BackColor = Color.Red;
-                textBoxFireControlPanelConnection.Text = "BAĞLANTI YOK";
+                labelFireControlPanelConnection.BackColor = Color.Red;
+                labelFireControlPanelConnection.Text = "BAĞLANTI YOK";
             }
             else
             {
                 AddToLog($"Yangın alarm paneli tespit edildi, port {detectedPort}.");
-                textBoxFireControlPanelConnection.BackColor = Color.Green;
-                textBoxFireControlPanelConnection.Text = "BAĞLANTI VAR";
+                labelFireControlPanelConnection.BackColor = Color.Green;
+                labelFireControlPanelConnection.Text = "BAĞLANTI VAR";
                 buttonGetZoneNames.Enabled = true;
                 buttonUpdateZoneNames.Enabled = true;
 
@@ -181,20 +182,22 @@ namespace WinFormsSerial
         {
             if (responseFirstByte == 0)
             {
-                textBoxAlarm.BackColor = Color.White;
-                textBoxAlarm.Text = "";
+                labelAlarm.BackColor = Color.White;
+                labelAlarm.ForeColor = Color.White;
+                labelAlarm.Text = "";
                 listBoxFireAlarms.Items.Clear();
 
-                textBoxFault.BackColor = Color.White;
-                textBoxFault.Text = "";
+                labelFault.BackColor = Color.White;
+                labelFault.Text = "";
                 listBoxZoneFaults.Items.Clear();
                 listBoxControlPanelFaults.Items.Clear();
             }
             else
             {
                 if (command == Constants.IS_THERE_FIRE_ALARM) {
-                    textBoxAlarm.BackColor = Color.Red;
-                    textBoxAlarm.Text = "ALARM";
+                    labelAlarm.BackColor = Color.Red;
+                    labelAlarm.ForeColor = Color.White;
+                    labelAlarm.Text = "ALARM";
                     List<int> problemZones = FaultAlarmCommandProcessor.GetZonesWithProblems(responseFirstByte);
                     //AddToLog($"Problem zones detected: {string.Join(", ", problemZones)}");
                     listBoxFireAlarms.Items.Clear();
@@ -205,9 +208,9 @@ namespace WinFormsSerial
                 }
                 else if (command == Constants.IS_THERE_ZONE_LINE_FAULT)
                 {
-                    textBoxFault.BackColor = Color.Yellow;
-                    textBoxFault.ForeColor = Color.Red;
-                    textBoxFault.Text = "HATA";
+                    labelFault.BackColor = Color.Yellow;
+                    labelFault.ForeColor = Color.Red;
+                    labelFault.Text = "HATA";
                     List<int> problemZones = FaultAlarmCommandProcessor.GetZonesWithProblems(responseFirstByte);
                     listBoxZoneFaults.Items.Clear();
                     string[] faultItems = problemZones.Select(zone => $"Bölge Hatası {zone + 1}").ToArray();
@@ -215,9 +218,9 @@ namespace WinFormsSerial
                 }
                 else if (command == Constants.IS_THERE_CONTROL_PANEL_FAULT)
                 {
-                    textBoxFault.BackColor = Color.Yellow;
-                    textBoxFault.ForeColor = Color.Red;
-                    textBoxFault.Text = "HATA";
+                    labelFault.BackColor = Color.Yellow;
+                    labelFault.ForeColor = Color.Red;
+                    labelFault.Text = "HATA";
                     var controlPanelFaults = FaultAlarmCommandProcessor.GetFireControlPanelFaults(responseFirstByte);
                     listBoxControlPanelFaults.Items.Clear();
                     foreach (var fault in controlPanelFaults)

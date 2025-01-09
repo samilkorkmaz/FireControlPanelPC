@@ -97,8 +97,8 @@ namespace WinFormsSerial
                             else
                             {
                                 Random random = new Random();
-                                responseBytes = [(random.NextDouble() < 0.3) ? (byte)0 : (byte)random.Next(1, 256)];
-                                //responseBytes = [0xAA];
+                                //responseBytes = [(random.NextDouble() < 0.3) ? (byte)0 : (byte)random.Next(1, 256)];
+                                responseBytes = [0xAA];
                                 //responseBytes = [0x01, 0x02, 0x03];
                             }
                             await Task.Factory.FromAsync(
