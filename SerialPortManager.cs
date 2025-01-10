@@ -276,8 +276,8 @@ namespace FireControlPanelPC
         private byte[] BuildZoneNamesUpdateCommand(string[] zoneNames)
         {
             const int commandSize = 1 + Constants.NB_OF_ZONES * (1 + Constants.ZONE_NAME_LENGTH) + 1;
-            byte[] command = new byte[commandSize];
-            command[0] = Constants.SET_ZONE_NAMES_COMMAND;
+            byte[] commandBytes = new byte[commandSize];
+            commandBytes[0] = Constants.SET_ZONE_NAMES_COMMAND;
 
             for (int i = 0; i < Constants.NB_OF_ZONES; i++)
             {
@@ -285,13 +285,14 @@ namespace FireControlPanelPC
                 byte[] nameBytes = Encoding.ASCII.GetBytes(zoneName);
 
                 int nameStart = 2 + i * (1 + Constants.ZONE_NAME_LENGTH);
-                command[nameStart - 1] = (byte)(200 + i + 1);
-                Array.Copy(nameBytes, 0, command, nameStart, Constants.ZONE_NAME_LENGTH);
+                commandBytes[nameStart - 1] = (byte)(200 + i + 1);
+                Array.Copy(nameBytes, 0, commandBytes, nameStart, Constants.ZONE_NAME_LENGTH);
             }
 
-            command[commandSize - 1] = 27; // End marker
-            return command;
+            commandBytes[commandSize - 1] = 27; // End marker
+            return commandBytes;
         }
+
         public static async Task<string?> DetectFireControlPanelPortAsync(Action<string> logCallback)
         {
             string[] availablePorts = SerialPort.GetPortNames();

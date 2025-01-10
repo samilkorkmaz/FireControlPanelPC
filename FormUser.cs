@@ -155,7 +155,7 @@ namespace FireControlPanelPC
 
         private async void FormUser_Shown(object? sender, EventArgs e)
         {
-            _emulator.Run();
+            //_emulator.Run();
             var detectedPort = await SerialPortManager.DetectFireControlPanelPortAsync(AddToLog);
             if (string.IsNullOrEmpty(detectedPort))
             {
@@ -190,6 +190,23 @@ namespace FireControlPanelPC
             }
         }
 
+        private object[]? prevListBoxZoneNamesItems;
+        private string[] GetProblemZoneItems(byte responseFirstByte, string start)
+        {
+            List<int> problemZones = FaultAlarmCommandProcessor.GetZonesWithProblems(responseFirstByte);
+            string[] problemZoneItems;
+            if (_zoneNameEditor.IsChangedByUser()) // Names changed by user but not yet sent to panel
+            {
+                problemZoneItems = problemZones.Select(zone => $"{start}: {prevListBoxZoneNamesItems?[zone]}").ToArray();
+            }
+            else
+            {
+                problemZoneItems = problemZones.Select(zone => $"{start}: {listBoxZoneNames.Items[zone]}").ToArray();
+                prevListBoxZoneNamesItems = listBoxZoneNames.Items.Cast<object>().ToArray(); //copy
+            }
+            return problemZoneItems;
+        }
+
         private void UpdateUI(byte command, byte responseFirstByte)
         {
             // Instead of clearing everything on 0 response, handle each command separately
@@ -206,10 +223,9 @@ namespace FireControlPanelPC
                 {
                     labelAlarm.BackColor = Color.Red;
                     labelAlarm.ForeColor = Color.White;
-                    labelAlarm.Text = "ALARM";
-                    List<int> problemZones = FaultAlarmCommandProcessor.GetZonesWithProblems(responseFirstByte);
+                    labelAlarm.Text = "ALARM";                    
                     listBoxFireAlarms.Items.Clear();
-                    string[] alarmItems = problemZones.Select(zone => $"Alarm: {listBoxZoneNames.Items[zone]}").ToArray();
+                    string[] alarmItems = GetProblemZoneItems(responseFirstByte, "Alarm");
                     listBoxFireAlarms.Items.AddRange(alarmItems);
                 }
             }
@@ -217,18 +233,20 @@ namespace FireControlPanelPC
             {
                 if (responseFirstByte == 0)
                 {
-                    labelFault.BackColor = Color.White;
-                    labelFault.Text = "";
+                    // Only clear faults label if no other panel faults exist
+                    if (listBoxControlPanelFaults.Items.Count == 0) { 
+                        labelFault.BackColor = Color.White;
+                        labelFault.Text = "";
+                    }
                     listBoxZoneFaults.Items.Clear();
                 }
                 else
                 {
                     labelFault.BackColor = Color.Yellow;
                     labelFault.ForeColor = Color.Red;
-                    labelFault.Text = "HATA";
-                    List<int> problemZones = FaultAlarmCommandProcessor.GetZonesWithProblems(responseFirstByte);
+                    labelFault.Text = "HATA";                    
                     listBoxZoneFaults.Items.Clear();
-                    string[] faultItems = problemZones.Select(zone => $"Hata: {listBoxZoneNames.Items[zone]}").ToArray();
+                    string[] faultItems = GetProblemZoneItems(responseFirstByte, "Hata");                       
                     listBoxZoneFaults.Items.AddRange(faultItems);
                 }
             }
@@ -236,7 +254,7 @@ namespace FireControlPanelPC
             {
                 if (responseFirstByte == 0)
                 {
-                    // Only clear control panel faults if no other faults exist
+                    // Only clear faults label if no other zone faults exist
                     if (listBoxZoneFaults.Items.Count == 0)
                     {
                         labelFault.BackColor = Color.White;

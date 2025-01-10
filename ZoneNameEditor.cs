@@ -104,6 +104,12 @@
             _editBox.SelectAll();
         }
 
+        bool _isChangedByUser = false;
+        public bool IsChangedByUser()
+        {
+            return _isChangedByUser;
+        }
+
         private void CommitEdit()
         {
             if (!_editBox.Visible || _editBox.Text.Length > Constants.ZONE_NAME_LENGTH) return;
@@ -116,6 +122,7 @@
                 _listBox.Items[index] = _editBox.Text;
                 _editedIndices.Add(index);
                 _listBox.Invalidate(GetItemBounds(index));
+                _isChangedByUser = true;
             }
 
             _editBox.Visible = false;
@@ -139,6 +146,7 @@
         {
             _editedIndices.Clear();
             _listBox.Invalidate();
+            _isChangedByUser = false;
         }
     }
 }

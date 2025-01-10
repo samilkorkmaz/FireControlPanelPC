@@ -1,4 +1,5 @@
 ﻿using System.IO.Ports;
+using System.Text;
 
 namespace FireControlPanelPC
 {
@@ -7,11 +8,17 @@ namespace FireControlPanelPC
         private CancellationTokenSource? _cancellationTokenSource;
         private Task? _runningTask;
         private Action<string> _logCallback;
-        private const string RECEIVE_PORT = "COM5";
+        private const string RECEIVE_PORT = "COM3";
+        private string _zoneNames;
 
         public FireControlPanelEmulator(Action<string> logCallback)
         {
             _logCallback = logCallback;
+            _zoneNames = "";
+            for (int i = 0; i < Constants.NB_OF_ZONES; i++)
+            {
+                _zoneNames += "emulator zone__" + (i + 1);
+            }
         }
 
         public void Run()
@@ -42,6 +49,41 @@ namespace FireControlPanelPC
                 _cancellationTokenSource.Dispose();
                 _cancellationTokenSource = null;
             }
+        }
+
+        private string[] ExtractZoneNamesFromCommand(byte[] commandBytes)
+        {
+            if (commandBytes[0] != Constants.SET_ZONE_NAMES_COMMAND)
+            {
+                throw new ArgumentException("Invalid command type");
+            }
+
+            string[] zoneNames = new string[Constants.NB_OF_ZONES];
+
+            for (int i = 0; i < Constants.NB_OF_ZONES; i++)
+            {
+                int nameStart = 2 + i * (1 + Constants.ZONE_NAME_LENGTH);
+                byte zoneIdentifier = commandBytes[nameStart - 1];
+
+                // Verify zone identifier (200 + zone_index + 1)
+                if (zoneIdentifier != (200 + i + 1))
+                {
+                    throw new ArgumentException($"Invalid zone identifier at position {nameStart - 1}");
+                }
+
+                byte[] nameBytes = new byte[Constants.ZONE_NAME_LENGTH];
+                Array.Copy(commandBytes, nameStart, nameBytes, 0, Constants.ZONE_NAME_LENGTH);
+                string zoneName = Encoding.ASCII.GetString(nameBytes).TrimEnd();
+                zoneNames[i] = zoneName;
+            }
+
+            // Verify end marker
+            if (commandBytes[commandBytes.Length - 1] != 27)
+            {
+                throw new ArgumentException("Invalid end marker");
+            }
+
+            return zoneNames;
         }
 
         private async Task RunEmulatorAsync(CancellationToken cancellationToken)
@@ -82,23 +124,19 @@ namespace FireControlPanelPC
                             var firstByteReceived = receivedData[0];
                             if (firstByteReceived == Constants.GET_ZONE_NAMES_COMMAND)
                             {
-                                //_logCallback($"Emulator received GET_ZONE_NAMES_COMMAND");
-                                string zoneNames = "";
-                                for (int i = 0; i < Constants.NB_OF_ZONES; i++)
-                                {
-                                    zoneNames += "emulator zone__" + (i + 1);
-                                }
-                                responseBytes = System.Text.Encoding.ASCII.GetBytes(zoneNames);
+                                //_logCallback($"Emulator received GET_ZONE_NAMES_COMMAND");                                
+                                responseBytes = System.Text.Encoding.ASCII.GetBytes(_zoneNames);
                             }
                             else if (firstByteReceived == Constants.SET_ZONE_NAMES_COMMAND)
                             {
+                                _zoneNames = string.Join("", ExtractZoneNamesFromCommand(receivedData));
                                 responseBytes = [245];
                             }
                             else
                             {
                                 Random random = new Random();
-                                //responseBytes = [(random.NextDouble() < 0.3) ? (byte)0 : (byte)random.Next(1, 256)];
-                                responseBytes = [0xAA];
+                                responseBytes = [(random.NextDouble() < 0.3) ? (byte)0 : (byte)random.Next(1, 256)];
+                                //responseBytes = [0xAA];
                                 //responseBytes = [0x01, 0x02, 0x03];
                             }
                             await Task.Factory.FromAsync(
