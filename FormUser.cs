@@ -263,9 +263,9 @@ namespace FireControlPanelPC
         private void buttonSettings_Click(object sender, EventArgs e)
         {
             var formSettings = new FormSettings(
-                (pollingPeriod, writeReadDelay_ms) => {
+                (pollingPeriod_ms, writeReadDelay_ms) => {
                     MessageBox.Show("Settings saved!");
-                    _pollingPeriod_ms = pollingPeriod;
+                    _pollingPeriod_ms = pollingPeriod_ms;
                     //TODO writeReadDelay_ms
                 },
                 () => {
