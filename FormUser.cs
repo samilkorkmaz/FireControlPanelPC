@@ -268,6 +268,7 @@ namespace FireControlPanelPC
                     MessageBox.Show("Settings saved!");
                     _pollingPeriod_ms = pollingPeriod_ms;
                     _writeReadDelay_ms = writeReadDelay_ms;
+                    Logger.Info($"Settings changes, _pollingPeriod_ms: {_pollingPeriod_ms}, _writeReadDelay_ms: {_writeReadDelay_ms}");
                 },
                 () => {
                     //MessageBox.Show("Settings cancelled!");
