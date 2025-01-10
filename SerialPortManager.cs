@@ -70,7 +70,7 @@ namespace FireControlPanelPC
             }
         }
 
-        public async Task<(byte[] response, int bytesRead)> SendCommandWithTimeoutAsync(byte[] command, int expectedResponseLength, int timeoutMs=1000)
+        public async Task<(byte[] response, int bytesRead)> SendCommandWithTimeoutAsync(byte[] command, int expectedResponseLength, int timeoutMs=1000, int writeReadDelay_ms = 300)
         {
             if (_serialPort == null || !_serialPort.IsOpen)
                 throw new InvalidOperationException("Serial port is not ready");
@@ -111,7 +111,7 @@ namespace FireControlPanelPC
                 _logCallback($"Command sent: {string.Join(", ", command)}");
 
                 // Small delay after successful write
-                await Task.Delay(300, cts.Token);
+                await Task.Delay(writeReadDelay_ms, cts.Token);
 
                 byte[] responseBytes = new byte[expectedResponseLength];
 

@@ -12,6 +12,7 @@ namespace FireControlPanelPC
         private CancellationTokenSource? _periodicCommandsCts;
         private Task? _periodicCommandsTask;
         private int _pollingPeriod_ms = 1000;
+        private int _writeReadDelay_ms = 300;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         public FormUser()
@@ -266,7 +267,7 @@ namespace FireControlPanelPC
                 (pollingPeriod_ms, writeReadDelay_ms) => {
                     MessageBox.Show("Settings saved!");
                     _pollingPeriod_ms = pollingPeriod_ms;
-                    //TODO writeReadDelay_ms
+                    _writeReadDelay_ms = writeReadDelay_ms;
                 },
                 () => {
                     MessageBox.Show("Settings cancelled!");
