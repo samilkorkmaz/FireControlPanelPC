@@ -1,5 +1,6 @@
 ﻿using NLog;
 using System.Text;
+using System.Windows.Forms;
 
 namespace FireControlPanelPC
 {
@@ -153,41 +154,51 @@ namespace FireControlPanelPC
             }
         }
 
-        private async void FormUser_Shown(object? sender, EventArgs e)
+        private async Task<string> ConnectToFireControlPanel()
         {
-            //_emulator.Run();
-            var detectedPort = await SerialPortManager.DetectFireControlPanelPortAsync(AddToLog);
-            if (string.IsNullOrEmpty(detectedPort))
+            string? detectedPort;
+            while (string.IsNullOrEmpty(detectedPort = await SerialPortManager.DetectFireControlPanelPortAsync(AddToLog)))
             {
                 AddToLog($"Yangın alarm paneli ile iletişim kurulamadı! Panelin PC'ye bağlantısını kontrol edin.");
                 labelFireControlPanelConnection.BackColor = Color.Red;
-                labelFireControlPanelConnection.Text = "BAĞLANTI YOK";
+                // Countdown from 5 to 1
+                for (int i = 5; i > 0; i--)
+                {
+                    labelFireControlPanelConnection.Text = $"BAĞLANTI YOK ({i})";
+                    await Task.Delay(1000); // Wait 1 second between counts
+                }
+                labelFireControlPanelConnection.BackColor = Color.Black;
+                labelFireControlPanelConnection.Text = "BAĞLANTI KONTROL...";
             }
-            else
+            return detectedPort;
+        }
+
+        private async void FormUser_Shown(object? sender, EventArgs e)
+        {
+            //_emulator.Run();
+            var detectedPort = await ConnectToFireControlPanel();
+            AddToLog($"Yangın alarm paneli tespit edildi, port {detectedPort}.");
+            labelFireControlPanelConnection.BackColor = Color.Green;
+            labelFireControlPanelConnection.Text = "BAĞLANTI VAR";
+            buttonGetZoneNames.Enabled = true;
+            buttonUpdateZoneNames.Enabled = true;
+
+            AddToLog($"Panel ile bağlantı kuruluyor...");
+            await _serialPortManager.ConnectAsync(detectedPort);
+
+            AddToLog("Get zone names...");
+            try
             {
-                AddToLog($"Yangın alarm paneli tespit edildi, port {detectedPort}.");
-                labelFireControlPanelConnection.BackColor = Color.Green;
-                labelFireControlPanelConnection.Text = "BAĞLANTI VAR";
-                buttonGetZoneNames.Enabled = true;
-                buttonUpdateZoneNames.Enabled = true;
-
-                AddToLog($"Panel ile bağlantı kuruluyor...");
-                await _serialPortManager.ConnectAsync(detectedPort);
-
-                AddToLog("Get zone names...");
-                try
-                {
-                    var responseBytes = await _serialPortManager.GetZoneNamesAsync();
-                    ParseAndDisplayZoneNames(responseBytes);
-                    AddToLog("Zone names obtained successfully.");
-                }
-                catch (Exception ex)
-                {
-                    AddToLog(ex.Message);
-                }
-
-                await StartPeriodicCommandsAsync();
+                var responseBytes = await _serialPortManager.GetZoneNamesAsync();
+                ParseAndDisplayZoneNames(responseBytes);
+                AddToLog("Zone names obtained successfully.");
             }
+            catch (Exception ex)
+            {
+                AddToLog(ex.Message);
+            }
+
+            await StartPeriodicCommandsAsync();
         }
 
         private object[]? prevListBoxZoneNamesItems;
@@ -298,10 +309,10 @@ namespace FireControlPanelPC
             var formSettings = new FormSettings(
                 (pollingPeriod_ms, writeReadDelay_ms) =>
                 {
-                    MessageBox.Show("Settings saved!");
+                    MessageBox.Show("Ayarlar kaydedildi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     _pollingPeriod_ms = pollingPeriod_ms;
                     _writeReadDelay_ms = writeReadDelay_ms;
-                    Logger.Info($"Settings changes, _pollingPeriod_ms: {_pollingPeriod_ms}, _writeReadDelay_ms: {_writeReadDelay_ms}");
+                    Logger.Info($"Settings saved, _pollingPeriod_ms: {_pollingPeriod_ms}, _writeReadDelay_ms: {_writeReadDelay_ms}");
                 },
                 () =>
                 {
