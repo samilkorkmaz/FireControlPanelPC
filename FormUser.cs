@@ -1,4 +1,5 @@
 ﻿
+using NLog;
 using System.Text;
 
 namespace WinFormsSerial
@@ -12,8 +13,10 @@ namespace WinFormsSerial
         private CancellationTokenSource? _periodicCommandsCts;
         private Task? _periodicCommandsTask;
 
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+
         public FormUser()
-        {
+        {            
             InitializeComponent();
             textBoxLog.Clear();
 
@@ -254,6 +257,7 @@ namespace WinFormsSerial
             {
                 textBoxLog.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + ": " + message + Environment.NewLine);
                 textBoxLog.ScrollToCaret();
+                Logger.Info(message);
             }
         }
 
