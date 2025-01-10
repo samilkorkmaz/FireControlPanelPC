@@ -70,7 +70,7 @@ namespace FireControlPanelPC
             }
         }
 
-        public async Task<(byte[] response, int bytesRead)> SendCommandWithTimeoutAsync(byte[] command, int expectedResponseLength, int timeoutMs=1000, int writeReadDelay_ms = 300)
+        public async Task<(byte[] response, int bytesRead)> SendCommandWithTimeoutAsync(byte[] command, int expectedResponseLength, int timeoutMs = 1000, int writeReadDelay_ms = 300)
         {
             if (_serialPort == null || !_serialPort.IsOpen)
                 throw new InvalidOperationException("Serial port is not ready");
@@ -234,14 +234,14 @@ namespace FireControlPanelPC
                 else
                 {
                     throw new InvalidOperationException(
-                        $"Error when getting zone names command {Constants.GET_ZONE_NAMES_COMMAND}: " +
+                        $"Error on Get Zone Names command {Constants.GET_ZONE_NAMES_COMMAND}: " +
                         $"Expected number of bytes {expectedBytesLength} is different from received {readBytesLength}"
                     );
                 }
             }
             catch (OperationCanceledException)
             {
-                throw new TimeoutException($"Get zone names operation timed out after {timeoutMs}ms");
+                throw new TimeoutException($"Get Zone Names operation timed out after {timeoutMs}ms");
             }
         }
 
@@ -262,14 +262,14 @@ namespace FireControlPanelPC
                 else
                 {
                     throw new InvalidOperationException(
-                        $"Error for updating zone names command {Constants.SET_ZONE_NAMES_COMMAND}: " +
+                        $"Error on Update Zone Names command {Constants.SET_ZONE_NAMES_COMMAND}: " +
                         $"expectedResponse was {expectedResponse}, got {responseFirstByte}"
                     );
                 }
             }
             catch (OperationCanceledException)
             {
-                throw new TimeoutException($"Update zone names operation timed out after {timeoutMs}ms");
+                throw new TimeoutException($"Update Zone Names operation timed out after {timeoutMs}ms");
             }
         }
 
@@ -281,7 +281,7 @@ namespace FireControlPanelPC
 
             for (int i = 0; i < Constants.NB_OF_ZONES; i++)
             {
-                string zoneName = (zoneNames[i]?? "").PadRight(Constants.ZONE_NAME_LENGTH);
+                string zoneName = (zoneNames[i] ?? "").PadRight(Constants.ZONE_NAME_LENGTH);
                 byte[] nameBytes = Encoding.ASCII.GetBytes(zoneName);
 
                 int nameStart = 2 + i * (1 + Constants.ZONE_NAME_LENGTH);
@@ -313,7 +313,8 @@ namespace FireControlPanelPC
                         WriteTimeout = 300
                     };
 
-                    bool portChecked = await Task.Run(() => {
+                    bool portChecked = await Task.Run(() =>
+                    {
                         try
                         {
                             testPort.Open();
@@ -341,6 +342,58 @@ namespace FireControlPanelPC
                 }
             }
             return null;
+        }
+
+        public async Task<byte[]> ResetPanelAsync(int timeoutMs = 1000)
+        {
+            using var cts = new CancellationTokenSource(timeoutMs);
+            try
+            {
+                var expectedBytesLength = 1;
+                var (responseBytes, readBytesLength) = await SendCommandWithTimeoutAsync([Constants.RESET_CONTROL_PANEL], expectedBytesLength);
+
+                if (readBytesLength == expectedBytesLength)
+                {
+                    return responseBytes;
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"Error on Reset Panel command {Constants.RESET_CONTROL_PANEL}: " +
+                        $"Expected number of bytes {expectedBytesLength} is different from received {readBytesLength}"
+                    );
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw new TimeoutException($"Reset Panel operation timed out after {timeoutMs}ms");
+            }
+        }
+
+        public async Task<byte[]> BuzzerStopAsync(int timeoutMs = 1000)
+        {
+            using var cts = new CancellationTokenSource(timeoutMs);
+            try
+            {
+                var expectedBytesLength = 1;
+                var (responseBytes, readBytesLength) = await SendCommandWithTimeoutAsync([Constants.STOP_BUZZER], expectedBytesLength);
+
+                if (readBytesLength == expectedBytesLength)
+                {
+                    return responseBytes;
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"Error on Stop Buzzer command {Constants.STOP_BUZZER}: " +
+                        $"Expected number of bytes {expectedBytesLength} is different from received {readBytesLength}"
+                    );
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw new TimeoutException($"Buzzer Stop operation timed out after {timeoutMs}ms");
+            }
         }
     }
 }

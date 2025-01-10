@@ -16,7 +16,7 @@ namespace FireControlPanelPC
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         public FormUser()
-        {            
+        {
             InitializeComponent();
             textBoxLog.Clear();
 
@@ -179,12 +179,12 @@ namespace FireControlPanelPC
                 {
                     var responseBytes = await _serialPortManager.GetZoneNamesAsync();
                     ParseAndDisplayZoneNames(responseBytes);
-                    AddToLog("Zone names obtained successfully.");                    
+                    AddToLog("Zone names obtained successfully.");
                 }
                 catch (Exception ex)
                 {
                     AddToLog(ex.Message);
-                }               
+                }
 
                 await StartPeriodicCommandsAsync();
             }
@@ -223,7 +223,7 @@ namespace FireControlPanelPC
                 {
                     labelAlarm.BackColor = Color.Red;
                     labelAlarm.ForeColor = Color.White;
-                    labelAlarm.Text = "ALARM";                    
+                    labelAlarm.Text = "ALARM";
                     listBoxFireAlarms.Items.Clear();
                     string[] alarmItems = GetProblemZoneItems(responseFirstByte, "Alarm");
                     listBoxFireAlarms.Items.AddRange(alarmItems);
@@ -234,7 +234,8 @@ namespace FireControlPanelPC
                 if (responseFirstByte == 0)
                 {
                     // Only clear faults label if no other panel faults exist
-                    if (listBoxControlPanelFaults.Items.Count == 0) { 
+                    if (listBoxControlPanelFaults.Items.Count == 0)
+                    {
                         labelFault.BackColor = Color.White;
                         labelFault.Text = "";
                     }
@@ -244,9 +245,9 @@ namespace FireControlPanelPC
                 {
                     labelFault.BackColor = Color.Yellow;
                     labelFault.ForeColor = Color.Red;
-                    labelFault.Text = "HATA";                    
+                    labelFault.Text = "HATA";
                     listBoxZoneFaults.Items.Clear();
-                    string[] faultItems = GetProblemZoneItems(responseFirstByte, "Hata");                       
+                    string[] faultItems = GetProblemZoneItems(responseFirstByte, "Hata");
                     listBoxZoneFaults.Items.AddRange(faultItems);
                 }
             }
@@ -295,13 +296,15 @@ namespace FireControlPanelPC
         private void buttonSettings_Click(object sender, EventArgs e)
         {
             var formSettings = new FormSettings(
-                (pollingPeriod_ms, writeReadDelay_ms) => {
+                (pollingPeriod_ms, writeReadDelay_ms) =>
+                {
                     MessageBox.Show("Settings saved!");
                     _pollingPeriod_ms = pollingPeriod_ms;
                     _writeReadDelay_ms = writeReadDelay_ms;
                     Logger.Info($"Settings changes, _pollingPeriod_ms: {_pollingPeriod_ms}, _writeReadDelay_ms: {_writeReadDelay_ms}");
                 },
-                () => {
+                () =>
+                {
                     //MessageBox.Show("Settings cancelled!");
                 }
             );
@@ -394,9 +397,64 @@ namespace FireControlPanelPC
             if (checkBoxEmulator.Checked)
             {
                 _emulator.Run();
-            } else
+            }
+            else
             {
                 await _emulator.StopAsync();
+            }
+        }
+
+        private async void buttonResetPanel_Click(object sender, EventArgs e)
+        {
+            AddToLog("Reset Panel...");
+            buttonResetPanel.Enabled = false;
+            try
+            {
+                // Pause periodic commands
+                await PausePeriodicCommandsAsync();
+
+                var responseBytes = await _serialPortManager.ResetPanelAsync();
+                AddToLog("Reset Panel successful.");
+
+                // Restart periodic commands
+                await StartPeriodicCommandsAsync();
+            }
+            catch (Exception ex)
+            {
+                AddToLog(ex.Message);
+                // Ensure periodic commands are restarted even if there was an error
+                await StartPeriodicCommandsAsync();
+            }
+            finally
+            {
+                buttonResetPanel.Enabled = true;
+            }
+        }
+
+        private async void buttonBuzzerStop_Click(object sender, EventArgs e)
+        {
+            AddToLog("Buzzer Stop...");
+            buttonBuzzerStop.Enabled = false;
+            try
+            {
+                // Pause periodic commands
+                await PausePeriodicCommandsAsync();
+
+                var responseBytes = await _serialPortManager.BuzzerStopAsync();
+                AddToLog("Buzzer successful.");
+
+                // Restart periodic commands
+                await StartPeriodicCommandsAsync();
+            }
+            catch (Exception ex)
+            {
+                AddToLog(ex.Message);
+                // Ensure periodic commands are restarted even if there was an error
+                await StartPeriodicCommandsAsync();
+            }
+            finally
+            {
+                buttonBuzzerStop.Enabled = true;
             }
         }
     }

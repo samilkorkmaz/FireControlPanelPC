@@ -45,6 +45,8 @@
             labelFault = new Label();
             labelFireControlPanelConnection = new Label();
             checkBoxEmulator = new CheckBox();
+            buttonResetPanel = new Button();
+            buttonBuzzerStop = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -221,11 +223,33 @@
             checkBoxEmulator.UseVisualStyleBackColor = true;
             checkBoxEmulator.CheckedChanged += checkBoxEmulator_CheckedChanged;
             // 
+            // buttonResetPanel
+            // 
+            buttonResetPanel.Location = new Point(19, 415);
+            buttonResetPanel.Name = "buttonResetPanel";
+            buttonResetPanel.Size = new Size(87, 23);
+            buttonResetPanel.TabIndex = 25;
+            buttonResetPanel.Text = "Panel Reset";
+            buttonResetPanel.UseVisualStyleBackColor = true;
+            buttonResetPanel.Click += buttonResetPanel_Click;
+            // 
+            // buttonBuzzerStop
+            // 
+            buttonBuzzerStop.Location = new Point(112, 415);
+            buttonBuzzerStop.Name = "buttonBuzzerStop";
+            buttonBuzzerStop.Size = new Size(99, 23);
+            buttonBuzzerStop.TabIndex = 26;
+            buttonBuzzerStop.Text = "Buzzer Stop";
+            buttonBuzzerStop.UseVisualStyleBackColor = true;
+            buttonBuzzerStop.Click += buttonBuzzerStop_Click;
+            // 
             // FormUser
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(642, 708);
+            Controls.Add(buttonBuzzerStop);
+            Controls.Add(buttonResetPanel);
             Controls.Add(checkBoxEmulator);
             Controls.Add(labelFireControlPanelConnection);
             Controls.Add(labelFault);
@@ -270,5 +294,7 @@
         private Label labelFault;
         private Label labelFireControlPanelConnection;
         private CheckBox checkBoxEmulator;
+        private Button buttonResetPanel;
+        private Button buttonBuzzerStop;
     }
 }
