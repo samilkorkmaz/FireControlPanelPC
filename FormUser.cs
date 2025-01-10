@@ -155,7 +155,7 @@ namespace FireControlPanelPC
 
         private async void FormUser_Shown(object? sender, EventArgs e)
         {
-            //_emulator.Run();
+            _emulator.Run();
             var detectedPort = await SerialPortManager.DetectFireControlPanelPortAsync(AddToLog);
             if (string.IsNullOrEmpty(detectedPort))
             {
@@ -173,6 +173,19 @@ namespace FireControlPanelPC
 
                 AddToLog($"Panel ile bağlantı kuruluyor...");
                 await _serialPortManager.ConnectAsync(detectedPort);
+
+                AddToLog("Get zone names...");
+                try
+                {
+                    var responseBytes = await _serialPortManager.GetZoneNamesAsync();
+                    ParseAndDisplayZoneNames(responseBytes);
+                    AddToLog("Zone names obtained successfully.");                    
+                }
+                catch (Exception ex)
+                {
+                    AddToLog(ex.Message);
+                }               
+
                 await StartPeriodicCommandsAsync();
             }
         }
@@ -196,7 +209,7 @@ namespace FireControlPanelPC
                     labelAlarm.Text = "ALARM";
                     List<int> problemZones = FaultAlarmCommandProcessor.GetZonesWithProblems(responseFirstByte);
                     listBoxFireAlarms.Items.Clear();
-                    string[] alarmItems = problemZones.Select(zone => $"Alarm {zone + 1}").ToArray();
+                    string[] alarmItems = problemZones.Select(zone => $"Alarm: {listBoxZoneNames.Items[zone]}").ToArray();
                     listBoxFireAlarms.Items.AddRange(alarmItems);
                 }
             }
@@ -215,7 +228,7 @@ namespace FireControlPanelPC
                     labelFault.Text = "HATA";
                     List<int> problemZones = FaultAlarmCommandProcessor.GetZonesWithProblems(responseFirstByte);
                     listBoxZoneFaults.Items.Clear();
-                    string[] faultItems = problemZones.Select(zone => $"Bölge Hatası {zone + 1}").ToArray();
+                    string[] faultItems = problemZones.Select(zone => $"Hata: {listBoxZoneNames.Items[zone]}").ToArray();
                     listBoxZoneFaults.Items.AddRange(faultItems);
                 }
             }
