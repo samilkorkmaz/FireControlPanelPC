@@ -1,6 +1,6 @@
 ﻿using System.IO.Ports;
 
-namespace WinFormsSerial
+namespace FireControlPanelPC
 {
     internal class FireControlPanelEmulator
     {

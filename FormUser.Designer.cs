@@ -1,4 +1,4 @@
-﻿namespace WinFormsSerial
+﻿namespace FireControlPanelPC
 {
     partial class FormUser
     {
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormUser));
-            buttonSwitchToDev = new Button();
+            buttonSettings = new Button();
             buttonGetZoneNames = new Button();
             buttonUpdateZoneNames = new Button();
             pictureBox1 = new PictureBox();
@@ -51,16 +51,15 @@
             groupBox3.SuspendLayout();
             SuspendLayout();
             // 
-            // buttonSwitchToDev
+            // buttonSettings
             // 
-            buttonSwitchToDev.Enabled = false;
-            buttonSwitchToDev.Location = new Point(453, 10);
-            buttonSwitchToDev.Name = "buttonSwitchToDev";
-            buttonSwitchToDev.Size = new Size(175, 23);
-            buttonSwitchToDev.TabIndex = 0;
-            buttonSwitchToDev.Text = "Switch to developer mode";
-            buttonSwitchToDev.UseVisualStyleBackColor = true;
-            buttonSwitchToDev.Click += buttonSwitchToDev_Click;
+            buttonSettings.Location = new Point(453, 10);
+            buttonSettings.Name = "buttonSettings";
+            buttonSettings.Size = new Size(175, 23);
+            buttonSettings.TabIndex = 0;
+            buttonSettings.Text = "Ayarlar";
+            buttonSettings.UseVisualStyleBackColor = true;
+            buttonSettings.Click += buttonSettings_Click;
             // 
             // buttonGetZoneNames
             // 
@@ -239,7 +238,7 @@
             Controls.Add(pictureBox1);
             Controls.Add(buttonUpdateZoneNames);
             Controls.Add(buttonGetZoneNames);
-            Controls.Add(buttonSwitchToDev);
+            Controls.Add(buttonSettings);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
@@ -255,7 +254,7 @@
 
         #endregion
 
-        private Button buttonSwitchToDev;
+        private Button buttonSettings;
         private Button buttonGetZoneNames;
         private Button buttonUpdateZoneNames;
         private PictureBox pictureBox1;

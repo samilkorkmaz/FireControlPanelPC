@@ -1,8 +1,7 @@
-﻿
-using NLog;
+﻿using NLog;
 using System.Text;
 
-namespace WinFormsSerial
+namespace FireControlPanelPC
 {
     public partial class FormUser : Form
     {
@@ -12,7 +11,7 @@ namespace WinFormsSerial
 
         private CancellationTokenSource? _periodicCommandsCts;
         private Task? _periodicCommandsTask;
-
+        private int _pollingPeriod_ms = 1000;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         public FormUser()
@@ -94,13 +93,13 @@ namespace WinFormsSerial
 
                     try
                     {
-                        var (responseBytes, bytesRead) = await _serialPortManager.SendCommandWithTimeoutAsync([command], 1);
+                        var (responseBytes, bytesRead) = await _serialPortManager.SendCommandWithTimeoutAsync([command], 1, _pollingPeriod_ms);
                         if (bytesRead > 0)
                         {
                             var responseFirstByte = responseBytes[0];
                             UpdateUI(command, responseFirstByte);
                         }
-                        await Task.Delay(1000, ct); // Add delay after each command
+                        await Task.Delay(_pollingPeriod_ms, ct); // Add delay after each command
                     }
                     catch (Exception ex)
                     {
@@ -261,10 +260,20 @@ namespace WinFormsSerial
             }
         }
 
-        private void buttonSwitchToDev_Click(object sender, EventArgs e)
+        private void buttonSettings_Click(object sender, EventArgs e)
         {
-            var formDev = new FormDeveloper();
-            formDev.ShowDialog();
+            /*var formDev = new FormDeveloper();
+            formDev.ShowDialog();*/
+            var formSettings = new FormSettings(
+                pollingPeriod => {
+                    MessageBox.Show("Settings saved!");
+                    _pollingPeriod_ms = pollingPeriod;
+                },
+                () => {
+                    MessageBox.Show("Settings cancelled!");
+                }
+            );
+            formSettings.ShowDialog();
         }
 
         private async void buttonGetZoneNames_Click(object sender, EventArgs e)

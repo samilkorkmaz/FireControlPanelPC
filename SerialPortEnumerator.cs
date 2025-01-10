@@ -1,7 +1,7 @@
 ﻿using System.Management;
 using System.IO.Ports;
 
-namespace WinFormsSerial
+namespace FireControlPanelPC
 {
     public class SerialPortEnumerator : IDisposable
     {

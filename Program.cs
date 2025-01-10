@@ -1,6 +1,6 @@
 ﻿using NLog;
 
-namespace WinFormsSerial
+namespace FireControlPanelPC
 {
     internal static class Program
     {

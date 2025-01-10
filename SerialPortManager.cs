@@ -2,7 +2,7 @@
 using System.Text;
 using System.Threading;
 
-namespace WinFormsSerial
+namespace FireControlPanelPC
 {
     public class SerialPortManager : IDisposable
     {

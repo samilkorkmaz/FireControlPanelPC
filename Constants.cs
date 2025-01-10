@@ -1,4 +1,4 @@
-﻿namespace WinFormsSerial
+﻿namespace FireControlPanelPC
 {
     public static class Constants
     {
