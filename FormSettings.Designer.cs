@@ -34,6 +34,7 @@
             label2 = new Label();
             buttonOk = new Button();
             buttonCancel = new Button();
+            checkBoxShowLog = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)numericUpDownWriteReadDelay_ms).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownPollingPeriod_ms).BeginInit();
             SuspendLayout();
@@ -43,14 +44,15 @@
             label1.AutoSize = true;
             label1.Location = new Point(11, 45);
             label1.Name = "label1";
-            label1.Size = new Size(201, 15);
+            label1.Size = new Size(216, 15);
             label1.TabIndex = 0;
-            label1.Text = "Delay btwn serial write and read [ms]";
+            label1.Text = "Serial yazma/okuma arası bekleme [ms]";
+            label1.TextAlign = ContentAlignment.TopRight;
             // 
             // numericUpDownWriteReadDelay_ms
             // 
             numericUpDownWriteReadDelay_ms.Increment = new decimal(new int[] { 50, 0, 0, 0 });
-            numericUpDownWriteReadDelay_ms.Location = new Point(220, 41);
+            numericUpDownWriteReadDelay_ms.Location = new Point(236, 41);
             numericUpDownWriteReadDelay_ms.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
             numericUpDownWriteReadDelay_ms.Minimum = new decimal(new int[] { 100, 0, 0, 0 });
             numericUpDownWriteReadDelay_ms.Name = "numericUpDownWriteReadDelay_ms";
@@ -61,7 +63,7 @@
             // numericUpDownPollingPeriod_ms
             // 
             numericUpDownPollingPeriod_ms.Increment = new decimal(new int[] { 50, 0, 0, 0 });
-            numericUpDownPollingPeriod_ms.Location = new Point(220, 12);
+            numericUpDownPollingPeriod_ms.Location = new Point(236, 12);
             numericUpDownPollingPeriod_ms.Maximum = new decimal(new int[] { 100000, 0, 0, 0 });
             numericUpDownPollingPeriod_ms.Minimum = new decimal(new int[] { 100, 0, 0, 0 });
             numericUpDownPollingPeriod_ms.Name = "numericUpDownPollingPeriod_ms";
@@ -72,25 +74,26 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(11, 16);
+            label2.Location = new Point(53, 16);
             label2.Name = "label2";
-            label2.Size = new Size(172, 15);
+            label2.Size = new Size(174, 15);
             label2.TabIndex = 2;
-            label2.Text = "Alarm/fault polling period [ms]";
+            label2.Text = "Alarm/hata sorgu peryodu [ms]";
+            label2.TextAlign = ContentAlignment.TopRight;
             // 
             // buttonOk
             // 
-            buttonOk.Location = new Point(12, 95);
+            buttonOk.Location = new Point(80, 108);
             buttonOk.Name = "buttonOk";
             buttonOk.Size = new Size(75, 23);
             buttonOk.TabIndex = 4;
-            buttonOk.Text = "Ok";
+            buttonOk.Text = "Tamam";
             buttonOk.UseVisualStyleBackColor = true;
             buttonOk.Click += buttonOk_Click;
             // 
             // buttonCancel
             // 
-            buttonCancel.Location = new Point(108, 95);
+            buttonCancel.Location = new Point(176, 108);
             buttonCancel.Name = "buttonCancel";
             buttonCancel.Size = new Size(75, 23);
             buttonCancel.TabIndex = 5;
@@ -98,18 +101,29 @@
             buttonCancel.UseVisualStyleBackColor = true;
             buttonCancel.Click += buttonCancel_Click;
             // 
+            // checkBoxShowLog
+            // 
+            checkBoxShowLog.AutoSize = true;
+            checkBoxShowLog.Location = new Point(12, 79);
+            checkBoxShowLog.Name = "checkBoxShowLog";
+            checkBoxShowLog.Size = new Size(82, 19);
+            checkBoxShowLog.TabIndex = 6;
+            checkBoxShowLog.Text = "Log göster";
+            checkBoxShowLog.UseVisualStyleBackColor = true;
+            // 
             // FormSettings
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(351, 139);
+            ClientSize = new Size(351, 141);
+            Controls.Add(checkBoxShowLog);
             Controls.Add(buttonCancel);
             Controls.Add(buttonOk);
             Controls.Add(numericUpDownPollingPeriod_ms);
             Controls.Add(label2);
             Controls.Add(numericUpDownWriteReadDelay_ms);
             Controls.Add(label1);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
+            FormBorderStyle = FormBorderStyle.FixedToolWindow;
             MaximizeBox = false;
             Name = "FormSettings";
             Text = "Ayarlar";
@@ -127,5 +141,6 @@
         private Label label2;
         private Button buttonOk;
         private Button buttonCancel;
+        private CheckBox checkBoxShowLog;
     }
 }

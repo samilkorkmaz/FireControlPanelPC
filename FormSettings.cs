@@ -2,10 +2,10 @@
 {
     public partial class FormSettings : Form
     {
-        private readonly Action<int, int> _onOkCallback;
+        private readonly Action<int, int, bool> _onOkCallback;
         private readonly Action _onCancelCallback;
 
-        public FormSettings(Action<int, int> onOkCallback, Action onCancelCallback)
+        public FormSettings(Action<int, int, bool> onOkCallback, Action onCancelCallback)
         {
             InitializeComponent();
             _onOkCallback = onOkCallback;
@@ -24,7 +24,7 @@
 
         private void buttonOk_Click(object sender, EventArgs e)
         {
-            _onOkCallback(getPollingPeriod_ms(), getSerialWriteReadlDelay_ms());
+            _onOkCallback(getPollingPeriod_ms(), getSerialWriteReadlDelay_ms(), checkBoxShowLog.Checked);
             Close();
         }
 

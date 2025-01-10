@@ -1,6 +1,7 @@
 ﻿using NLog;
 using System.Text;
 using System.Windows.Forms;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace FireControlPanelPC
 {
@@ -168,20 +169,20 @@ namespace FireControlPanelPC
                     await Task.Delay(1000); // Wait 1 second between counts
                 }
                 labelFireControlPanelConnection.BackColor = Color.Black;
-                labelFireControlPanelConnection.Text = "BAĞLANTI KONTROL...";
+                labelFireControlPanelConnection.Text = "BAĞLANTI KURULUYOR...";
             }
+            AddToLog($"Yangın alarm paneli tespit edildi, port {detectedPort}.");
+            labelFireControlPanelConnection.BackColor = Color.Green;
+            labelFireControlPanelConnection.Text = $"BAĞLANTI {detectedPort}";
+            buttonGetZoneNames.Enabled = true;
+            buttonUpdateZoneNames.Enabled = true;
             return detectedPort;
         }
 
         private async void FormUser_Shown(object? sender, EventArgs e)
         {
             //_emulator.Run();
-            var detectedPort = await ConnectToFireControlPanel();
-            AddToLog($"Yangın alarm paneli tespit edildi, port {detectedPort}.");
-            labelFireControlPanelConnection.BackColor = Color.Green;
-            labelFireControlPanelConnection.Text = "BAĞLANTI VAR";
-            buttonGetZoneNames.Enabled = true;
-            buttonUpdateZoneNames.Enabled = true;
+            var detectedPort = await ConnectToFireControlPanel();           
 
             AddToLog($"Panel ile bağlantı kuruluyor...");
             await _serialPortManager.ConnectAsync(detectedPort);
@@ -289,29 +290,42 @@ namespace FireControlPanelPC
             }
         }
 
-        private void AddToLog(string message)
+        private void AddToLog(string text)
         {
             if (InvokeRequired) // Method called from a different thread - marshal the call to the UI thread
             {
-                BeginInvoke(() => AddToLog(message));
+                BeginInvoke(() => AddToLog(text));
                 return;
             }
             if (!textBoxLog.IsDisposed) // To prevent exception on window close, which disposes textBoxLog
             {
-                textBoxLog.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + ": " + message + Environment.NewLine);
+                textBoxLog.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + ": " + text + Environment.NewLine);
+
+                const int maxLines = 100;
+                string[] lines = textBoxLog.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                int lineCount = lines.Length;
+
+                if (lineCount > maxLines)
+                {
+                    textBoxLog.Text = string.Join(Environment.NewLine,
+                        lines.Skip(lineCount - maxLines)) + Environment.NewLine;
+                }
+
+                textBoxLog.SelectionStart = textBoxLog.Text.Length; // Positions the caret (text cursor) at the end of the text. This is done before ScrollToCaret() to ensure the TextBox scrolls to show the latest text.
                 textBoxLog.ScrollToCaret();
-                Logger.Info(message);
+                Logger.Info(text);
             }
         }
 
         private void buttonSettings_Click(object sender, EventArgs e)
         {
             var formSettings = new FormSettings(
-                (pollingPeriod_ms, writeReadDelay_ms) =>
+                (pollingPeriod_ms, writeReadDelay_ms, showLog) =>
                 {
-                    MessageBox.Show("Ayarlar kaydedildi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    //MessageBox.Show("Ayarlar kaydedildi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     _pollingPeriod_ms = pollingPeriod_ms;
                     _writeReadDelay_ms = writeReadDelay_ms;
+                    textBoxLog.Visible = showLog;
                     Logger.Info($"Settings saved, _pollingPeriod_ms: {_pollingPeriod_ms}, _writeReadDelay_ms: {_writeReadDelay_ms}");
                 },
                 () =>

@@ -102,9 +102,10 @@
             textBoxLog.Name = "textBoxLog";
             textBoxLog.ReadOnly = true;
             textBoxLog.ScrollBars = ScrollBars.Both;
-            textBoxLog.Size = new Size(401, 455);
+            textBoxLog.Size = new Size(401, 197);
             textBoxLog.TabIndex = 14;
             textBoxLog.Text = "Log";
+            textBoxLog.Visible = false;
             // 
             // groupBox1
             // 
@@ -208,7 +209,7 @@
             labelFireControlPanelConnection.Name = "labelFireControlPanelConnection";
             labelFireControlPanelConnection.Size = new Size(192, 23);
             labelFireControlPanelConnection.TabIndex = 23;
-            labelFireControlPanelConnection.Text = "BAĞLANTI KONTROL...";
+            labelFireControlPanelConnection.Text = "BAĞLANTI KURULUYOR...";
             labelFireControlPanelConnection.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // buttonResetPanel
@@ -235,7 +236,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(642, 708);
+            ClientSize = new Size(642, 448);
             Controls.Add(buttonBuzzerStop);
             Controls.Add(buttonResetPanel);
             Controls.Add(labelFireControlPanelConnection);
