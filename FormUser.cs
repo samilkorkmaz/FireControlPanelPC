@@ -15,11 +15,25 @@ namespace FireControlPanelPC
         private Task? _periodicCommandsTask;
         private int _pollingPeriod_ms = 1000;
         private int _writeReadDelay_ms = 300;
+        private bool _showLog = false;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         public FormUser()
         {
             InitializeComponent();
+            linkLabelNavelsan.Text = "©2025 navelsan\nhttps://navelsan.com.tr/";
+            linkLabelNavelsan.Links.Add(0, linkLabelNavelsan.Text.Length, "https://navelsan.com.tr/");
+            linkLabelNavelsan.LinkClicked += (sender, e) => {
+                if (e.Link?.LinkData != null)
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = e.Link.LinkData.ToString(),
+                        UseShellExecute = true
+                    });
+                }
+            };
+
             textBoxLog.Clear();
 
             _serialPortManager = new SerialPortManager(AddToLog);
@@ -319,13 +333,15 @@ namespace FireControlPanelPC
 
         private void buttonSettings_Click(object sender, EventArgs e)
         {
-            var formSettings = new FormSettings(
+            var formSettings = new FormSettings(_pollingPeriod_ms, _writeReadDelay_ms, _showLog,
                 (pollingPeriod_ms, writeReadDelay_ms, showLog) =>
                 {
                     //MessageBox.Show("Ayarlar kaydedildi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     _pollingPeriod_ms = pollingPeriod_ms;
                     _writeReadDelay_ms = writeReadDelay_ms;
-                    textBoxLog.Visible = showLog;
+                    _showLog = showLog;
+                    textBoxLog.Visible = _showLog;
+                    linkLabelNavelsan.Visible = !_showLog;
                     Logger.Info($"Settings saved, _pollingPeriod_ms: {_pollingPeriod_ms}, _writeReadDelay_ms: {_writeReadDelay_ms}");
                 },
                 () =>

@@ -46,6 +46,7 @@
             labelFireControlPanelConnection = new Label();
             buttonResetPanel = new Button();
             buttonBuzzerStop = new Button();
+            linkLabelNavelsan = new LinkLabel();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -232,11 +233,23 @@
             buttonBuzzerStop.UseVisualStyleBackColor = true;
             buttonBuzzerStop.Click += buttonBuzzerStop_Click;
             // 
+            // linkLabelNavelsan
+            // 
+            linkLabelNavelsan.AutoSize = true;
+            linkLabelNavelsan.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            linkLabelNavelsan.Location = new Point(233, 270);
+            linkLabelNavelsan.Name = "linkLabelNavelsan";
+            linkLabelNavelsan.Size = new Size(78, 21);
+            linkLabelNavelsan.TabIndex = 28;
+            linkLabelNavelsan.TabStop = true;
+            linkLabelNavelsan.Text = "navelsan";
+            // 
             // FormUser
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(642, 448);
+            Controls.Add(linkLabelNavelsan);
             Controls.Add(buttonBuzzerStop);
             Controls.Add(buttonResetPanel);
             Controls.Add(labelFireControlPanelConnection);
@@ -283,5 +296,6 @@
         private Label labelFireControlPanelConnection;
         private Button buttonResetPanel;
         private Button buttonBuzzerStop;
+        private LinkLabel linkLabelNavelsan;
     }
 }
