@@ -8,7 +8,7 @@ namespace FireControlPanelPC
         private CancellationTokenSource? _cancellationTokenSource;
         private Task? _runningTask;
         private Action<string> _logCallback;
-        private const string RECEIVE_PORT = "COM3";
+        private const string RECEIVE_PORT = "COM5";
         private string _zoneNames;
 
         public FireControlPanelEmulator(Action<string> logCallback)

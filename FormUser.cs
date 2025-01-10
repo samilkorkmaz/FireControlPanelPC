@@ -111,15 +111,15 @@ namespace FireControlPanelPC
             }
         }
 
-        private bool _isClosing;  // Track cleanup state
-        private bool _disposed;   // Track if we've already disposed
+        private bool _isFormClosing;  // Track cleanup state
+        private bool _isSerialPortManagerDisposed;   // Track if we've already disposed
         protected override async void OnFormClosing(FormClosingEventArgs e)
         {
             // Proceed with normal closing if:
             // - We're already in the closing process, or
             // - We've already disposed resources, or
             // - We have no serial port manager to cleanup
-            if (_isClosing || _disposed || _serialPortManager == null)
+            if (_isFormClosing || _isSerialPortManagerDisposed || _serialPortManager == null)
             {
                 base.OnFormClosing(e);
                 return;
@@ -127,7 +127,7 @@ namespace FireControlPanelPC
 
             try
             {
-                _isClosing = true;
+                _isFormClosing = true;
                 e.Cancel = true;  // Cancel this close attempt
 
                 // Stop periodic commands if running
@@ -135,12 +135,12 @@ namespace FireControlPanelPC
 
                 // Dispose the serial port manager
                 await _serialPortManager.DisposeAsync();
-                _disposed = true;
+                _isSerialPortManagerDisposed = true;
 
                 // Now close the form without triggering another cleanup
                 BeginInvoke(() =>
                 {
-                    _isClosing = false;  // Reset closing flag
+                    _isFormClosing = false;  // Reset closing flag
                     Close();
                 });
             }
@@ -148,8 +148,8 @@ namespace FireControlPanelPC
             {
                 MessageBox.Show($"Error during cleanup: {ex.Message}", "Cleanup Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                _isClosing = false;
-                _disposed = true;  // Consider it disposed even on error
+                _isFormClosing = false;
+                _isSerialPortManagerDisposed = true;  // Consider it disposed even on error
                 BeginInvoke(() => Close());
             }
         }
@@ -400,18 +400,6 @@ namespace FireControlPanelPC
                 {
                     await StartPeriodicCommandsAsync();
                 }
-            }
-        }
-
-        private async void checkBoxEmulator_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBoxEmulator.Checked)
-            {
-                _emulator.Run();
-            }
-            else
-            {
-                await _emulator.StopAsync();
             }
         }
 
