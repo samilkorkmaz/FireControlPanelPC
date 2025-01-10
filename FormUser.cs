@@ -270,7 +270,7 @@ namespace FireControlPanelPC
                     _writeReadDelay_ms = writeReadDelay_ms;
                 },
                 () => {
-                    MessageBox.Show("Settings cancelled!");
+                    //MessageBox.Show("Settings cancelled!");
                 }
             );
             formSettings.ShowDialog();
