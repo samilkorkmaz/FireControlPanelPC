@@ -262,12 +262,11 @@ namespace FireControlPanelPC
 
         private void buttonSettings_Click(object sender, EventArgs e)
         {
-            /*var formDev = new FormDeveloper();
-            formDev.ShowDialog();*/
             var formSettings = new FormSettings(
-                pollingPeriod => {
+                (pollingPeriod, writeReadDelay_ms) => {
                     MessageBox.Show("Settings saved!");
                     _pollingPeriod_ms = pollingPeriod;
+                    //TODO writeReadDelay_ms
                 },
                 () => {
                     MessageBox.Show("Settings cancelled!");
