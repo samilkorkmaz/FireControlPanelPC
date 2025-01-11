@@ -190,6 +190,8 @@ namespace FireControlPanelPC
             labelFireControlPanelConnection.BackColor = Color.Green;
             labelFireControlPanelConnection.Text = $"BAĞLANTI {detectedPort}";
             buttonUpdateZoneNames.Enabled = true;
+            buttonBuzzerStop.Enabled = true;
+            buttonResetPanel.Enabled = true;
             return detectedPort;
         }
 

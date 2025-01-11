@@ -205,6 +205,7 @@
             // 
             // buttonResetPanel
             // 
+            buttonResetPanel.Enabled = false;
             buttonResetPanel.Location = new Point(227, 408);
             buttonResetPanel.Name = "buttonResetPanel";
             buttonResetPanel.Size = new Size(107, 23);
@@ -215,6 +216,7 @@
             // 
             // buttonBuzzerStop
             // 
+            buttonBuzzerStop.Enabled = false;
             buttonBuzzerStop.Location = new Point(360, 408);
             buttonBuzzerStop.Name = "buttonBuzzerStop";
             buttonBuzzerStop.Size = new Size(119, 23);
