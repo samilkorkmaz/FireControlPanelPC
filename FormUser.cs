@@ -189,7 +189,6 @@ namespace FireControlPanelPC
             AddToLog($"Yangın alarm paneli tespit edildi, port {detectedPort}.");
             labelFireControlPanelConnection.BackColor = Color.Green;
             labelFireControlPanelConnection.Text = $"BAĞLANTI {detectedPort}";
-            //buttonGetZoneNames.Enabled = true;
             buttonUpdateZoneNames.Enabled = true;
             return detectedPort;
         }
@@ -353,37 +352,6 @@ namespace FireControlPanelPC
                 formSettings.ShowDialog(this);
             }
         }
-
-        /*private async void buttonGetZoneNames_Click(object sender, EventArgs e)
-        {
-            AddToLog("Get zone names...");
-            buttonGetZoneNames.Enabled = false;
-            try
-            {
-                // Pause periodic commands before getting zone names
-                await PausePeriodicCommandsAsync();
-
-                var responseBytes = await _serialPortManager.GetZoneNamesAsync();
-                ParseAndDisplayZoneNames(responseBytes);
-                AddToLog("Zone names obtained successfully.");
-                buttonUpdateZoneNames.Enabled = true;
-
-                // Restart periodic commands after getting zone names
-                await StartPeriodicCommandsAsync();
-            }
-            catch (Exception ex)
-            {
-                AddToLog(ex.Message);
-                buttonUpdateZoneNames.Enabled = false;
-
-                // Ensure periodic commands are restarted even if there was an error
-                await StartPeriodicCommandsAsync();
-            }
-            finally
-            {
-                buttonGetZoneNames.Enabled = true;
-            }
-        }*/
 
         private void ParseAndDisplayZoneNames(byte[] responseBytes)
         {
