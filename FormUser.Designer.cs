@@ -30,7 +30,6 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormUser));
             buttonSettings = new Button();
-            buttonGetZoneNames = new Button();
             buttonUpdateZoneNames = new Button();
             pictureBox1 = new PictureBox();
             textBoxLog = new TextBox();
@@ -47,10 +46,12 @@
             buttonResetPanel = new Button();
             buttonBuzzerStop = new Button();
             linkLabelNavelsan = new LinkLabel();
+            groupBox4 = new GroupBox();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
+            groupBox4.SuspendLayout();
             SuspendLayout();
             // 
             // buttonSettings
@@ -63,23 +64,12 @@
             buttonSettings.UseVisualStyleBackColor = true;
             buttonSettings.Click += buttonSettings_Click;
             // 
-            // buttonGetZoneNames
-            // 
-            buttonGetZoneNames.Enabled = false;
-            buttonGetZoneNames.Location = new Point(19, 241);
-            buttonGetZoneNames.Name = "buttonGetZoneNames";
-            buttonGetZoneNames.Size = new Size(119, 23);
-            buttonGetZoneNames.TabIndex = 9;
-            buttonGetZoneNames.Text = "Bölge İsimlerini Al";
-            buttonGetZoneNames.UseVisualStyleBackColor = true;
-            buttonGetZoneNames.Click += buttonGetZoneNames_Click;
-            // 
             // buttonUpdateZoneNames
             // 
             buttonUpdateZoneNames.Enabled = false;
-            buttonUpdateZoneNames.Location = new Point(144, 241);
+            buttonUpdateZoneNames.Location = new Point(8, 164);
             buttonUpdateZoneNames.Name = "buttonUpdateZoneNames";
-            buttonUpdateZoneNames.Size = new Size(74, 23);
+            buttonUpdateZoneNames.Size = new Size(192, 23);
             buttonUpdateZoneNames.TabIndex = 10;
             buttonUpdateZoneNames.Text = "Güncelle";
             buttonUpdateZoneNames.UseVisualStyleBackColor = true;
@@ -103,7 +93,7 @@
             textBoxLog.Name = "textBoxLog";
             textBoxLog.ReadOnly = true;
             textBoxLog.ScrollBars = ScrollBars.Both;
-            textBoxLog.Size = new Size(401, 197);
+            textBoxLog.Size = new Size(401, 161);
             textBoxLog.TabIndex = 14;
             textBoxLog.Text = "Log";
             textBoxLog.Visible = false;
@@ -172,7 +162,7 @@
             // 
             listBoxZoneNames.Font = new Font("Courier New", 9F);
             listBoxZoneNames.FormattingEnabled = true;
-            listBoxZoneNames.Location = new Point(19, 270);
+            listBoxZoneNames.Location = new Point(8, 19);
             listBoxZoneNames.Name = "listBoxZoneNames";
             listBoxZoneNames.Size = new Size(192, 139);
             listBoxZoneNames.TabIndex = 20;
@@ -215,9 +205,9 @@
             // 
             // buttonResetPanel
             // 
-            buttonResetPanel.Location = new Point(19, 415);
+            buttonResetPanel.Location = new Point(227, 408);
             buttonResetPanel.Name = "buttonResetPanel";
-            buttonResetPanel.Size = new Size(87, 23);
+            buttonResetPanel.Size = new Size(107, 23);
             buttonResetPanel.TabIndex = 25;
             buttonResetPanel.Text = "Panel Reset";
             buttonResetPanel.UseVisualStyleBackColor = true;
@@ -225,9 +215,9 @@
             // 
             // buttonBuzzerStop
             // 
-            buttonBuzzerStop.Location = new Point(112, 415);
+            buttonBuzzerStop.Location = new Point(360, 408);
             buttonBuzzerStop.Name = "buttonBuzzerStop";
-            buttonBuzzerStop.Size = new Size(99, 23);
+            buttonBuzzerStop.Size = new Size(119, 23);
             buttonBuzzerStop.TabIndex = 26;
             buttonBuzzerStop.Text = "Buzzer Stop";
             buttonBuzzerStop.UseVisualStyleBackColor = true;
@@ -244,25 +234,34 @@
             linkLabelNavelsan.TabStop = true;
             linkLabelNavelsan.Text = "navelsan";
             // 
+            // groupBox4
+            // 
+            groupBox4.Controls.Add(listBoxZoneNames);
+            groupBox4.Controls.Add(buttonUpdateZoneNames);
+            groupBox4.Location = new Point(12, 244);
+            groupBox4.Name = "groupBox4";
+            groupBox4.Size = new Size(206, 194);
+            groupBox4.TabIndex = 29;
+            groupBox4.TabStop = false;
+            groupBox4.Text = "Bölge İsimleri";
+            // 
             // FormUser
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(642, 448);
+            ClientSize = new Size(641, 447);
+            Controls.Add(groupBox4);
             Controls.Add(linkLabelNavelsan);
             Controls.Add(buttonBuzzerStop);
             Controls.Add(buttonResetPanel);
             Controls.Add(labelFireControlPanelConnection);
             Controls.Add(labelFault);
             Controls.Add(labelAlarm);
-            Controls.Add(listBoxZoneNames);
             Controls.Add(groupBox3);
             Controls.Add(groupBox2);
             Controls.Add(groupBox1);
             Controls.Add(textBoxLog);
             Controls.Add(pictureBox1);
-            Controls.Add(buttonUpdateZoneNames);
-            Controls.Add(buttonGetZoneNames);
             Controls.Add(buttonSettings);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -273,6 +272,7 @@
             groupBox1.ResumeLayout(false);
             groupBox2.ResumeLayout(false);
             groupBox3.ResumeLayout(false);
+            groupBox4.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -280,7 +280,6 @@
         #endregion
 
         private Button buttonSettings;
-        private Button buttonGetZoneNames;
         private Button buttonUpdateZoneNames;
         private PictureBox pictureBox1;
         private TextBox textBoxLog;
@@ -297,5 +296,6 @@
         private Button buttonResetPanel;
         private Button buttonBuzzerStop;
         private LinkLabel linkLabelNavelsan;
+        private GroupBox groupBox4;
     }
 }

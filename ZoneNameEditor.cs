@@ -90,12 +90,19 @@
             if (clickedIndex == ListBox.NoMatches) return;
 
             Rectangle itemRect = _listBox.GetItemRectangle(clickedIndex);
+
+            // Convert the ListBox coordinates to screen coordinates
+            Point listBoxScreenPoint = _listBox.PointToScreen(new Point(itemRect.Left, itemRect.Top));
+            // Convert screen coordinates to the parent form coordinates
+            Point locationInForm = _listBox.FindForm().PointToClient(listBoxScreenPoint);
+
             _editBox.Bounds = new Rectangle(
-                _listBox.Left + itemRect.Left,
-                _listBox.Top + itemRect.Top,
+                locationInForm.X,
+                locationInForm.Y,
                 itemRect.Width,
                 itemRect.Height
             );
+
             _editBox.Text = _listBox.Items[clickedIndex].ToString();
             _editBox.Tag = clickedIndex;
             _editBox.Visible = true;

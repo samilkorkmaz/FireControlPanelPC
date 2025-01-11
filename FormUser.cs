@@ -14,7 +14,7 @@ namespace FireControlPanelPC
         private CancellationTokenSource? _periodicCommandsCts;
         private Task? _periodicCommandsTask;
         private int _pollingPeriod_ms = 1000;
-        private int _writeReadDelay_ms = 300;
+        private int _writeReadDelay_ms = 500;
         private bool _showLog = false;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
@@ -189,14 +189,14 @@ namespace FireControlPanelPC
             AddToLog($"Yangın alarm paneli tespit edildi, port {detectedPort}.");
             labelFireControlPanelConnection.BackColor = Color.Green;
             labelFireControlPanelConnection.Text = $"BAĞLANTI {detectedPort}";
-            buttonGetZoneNames.Enabled = true;
+            //buttonGetZoneNames.Enabled = true;
             buttonUpdateZoneNames.Enabled = true;
             return detectedPort;
         }
 
         private async void FormUser_Shown(object? sender, EventArgs e)
         {
-            //_emulator.Run();
+            _emulator.Run();
             var detectedPort = await ConnectToFireControlPanel();
 
             AddToLog($"Panel ile bağlantı kuruluyor...");
@@ -354,7 +354,7 @@ namespace FireControlPanelPC
             }
         }
 
-        private async void buttonGetZoneNames_Click(object sender, EventArgs e)
+        /*private async void buttonGetZoneNames_Click(object sender, EventArgs e)
         {
             AddToLog("Get zone names...");
             buttonGetZoneNames.Enabled = false;
@@ -383,7 +383,7 @@ namespace FireControlPanelPC
             {
                 buttonGetZoneNames.Enabled = true;
             }
-        }
+        }*/
 
         private void ParseAndDisplayZoneNames(byte[] responseBytes)
         {
