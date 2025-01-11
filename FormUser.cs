@@ -195,7 +195,7 @@ namespace FireControlPanelPC
 
         private async void FormUser_Shown(object? sender, EventArgs e)
         {
-            _emulator.Run();
+            //_emulator.Run();
             var detectedPort = await ConnectToFireControlPanel();
 
             AddToLog($"Panel ile bağlantı kuruluyor...");
