@@ -93,8 +93,13 @@
 
             // Convert the ListBox coordinates to screen coordinates
             Point listBoxScreenPoint = _listBox.PointToScreen(new Point(itemRect.Left, itemRect.Top));
+
+            // Get the parent form (group box) with null check
+            Form? parentForm = _listBox.FindForm();
+            if (parentForm == null) return;  // Exit if we can't find the parent form
+
             // Convert screen coordinates to the parent form coordinates
-            Point locationInForm = _listBox.FindForm().PointToClient(listBoxScreenPoint);
+            Point locationInForm = parentForm.PointToClient(listBoxScreenPoint);
 
             _editBox.Bounds = new Rectangle(
                 locationInForm.X,
