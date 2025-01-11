@@ -23,7 +23,8 @@ namespace FireControlPanelPC
             InitializeComponent();
             linkLabelNavelsan.Text = "©2025 navelsan\nhttps://navelsan.com.tr/";
             linkLabelNavelsan.Links.Add(0, linkLabelNavelsan.Text.Length, "https://navelsan.com.tr/");
-            linkLabelNavelsan.LinkClicked += (sender, e) => {
+            linkLabelNavelsan.LinkClicked += (sender, e) =>
+            {
                 if (e.Link?.LinkData != null)
                 {
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
@@ -196,7 +197,7 @@ namespace FireControlPanelPC
         private async void FormUser_Shown(object? sender, EventArgs e)
         {
             //_emulator.Run();
-            var detectedPort = await ConnectToFireControlPanel();           
+            var detectedPort = await ConnectToFireControlPanel();
 
             AddToLog($"Panel ile bağlantı kuruluyor...");
             await _serialPortManager.ConnectAsync(detectedPort);
@@ -333,7 +334,7 @@ namespace FireControlPanelPC
 
         private void buttonSettings_Click(object sender, EventArgs e)
         {
-            var formSettings = new FormSettings(_pollingPeriod_ms, _writeReadDelay_ms, _showLog,
+            using (var formSettings = new FormSettings(_pollingPeriod_ms, _writeReadDelay_ms, _showLog,
                 (pollingPeriod_ms, writeReadDelay_ms, showLog) =>
                 {
                     //MessageBox.Show("Ayarlar kaydedildi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -342,14 +343,15 @@ namespace FireControlPanelPC
                     _showLog = showLog;
                     textBoxLog.Visible = _showLog;
                     linkLabelNavelsan.Visible = !_showLog;
-                    Logger.Info($"Settings saved, _pollingPeriod_ms: {_pollingPeriod_ms}, _writeReadDelay_ms: {_writeReadDelay_ms}");
+                    Logger.Info($"Settings saved, pollingPeriod_ms: {_pollingPeriod_ms}, writeReadDelay_ms: {_writeReadDelay_ms}, showLog: {_showLog}");
                 },
                 () =>
                 {
                     //MessageBox.Show("Settings cancelled!");
-                }
-            );
-            formSettings.ShowDialog();
+                }))
+            {
+                formSettings.ShowDialog(this);
+            }
         }
 
         private async void buttonGetZoneNames_Click(object sender, EventArgs e)
