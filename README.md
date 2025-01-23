@@ -1,5 +1,5 @@
 # Fire Control Panel PC
-Windows 8+, C#, .NET 9.0, Visual Studio 2022
+Windows 8+, C#, .NET 9.0, Visual Studio 2022, developed for [navelsan](https://navelsan.com.tr/)
 
 [Developer diary](https://docs.google.com/document/d/1mTkX9o0rhzWKpD7OGl0VyvK-jbmuOlqKo6SBZcMANt4/edit?tab=t.0#heading=h.ntkd19l6sz4o)
 
