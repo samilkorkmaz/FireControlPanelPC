@@ -6,7 +6,7 @@ Windows 8+, C#, .NET 9.0, Visual Studio 2022, developed for [navelsan](https://n
 Features:
 1. Detects COM port to which fire control panel is connected by sending a command to all available COM ports. The responding port is the fire control panel port.
 2. Periodically sends commands over serial port to fire control panel and visualizes reponses.
-3. Save log messages logs/app.log
+3. Save log messages to logs/app.log
 
 To enable emulator for testing without fire control panel hardware:
 1. If you haven't already, install null modem emulator [com0com](https://com0com.sourceforge.net/). This will add COM ports:
