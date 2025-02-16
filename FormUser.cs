@@ -100,6 +100,9 @@ namespace FireControlPanelPC
             }
         }
 
+
+        private int errorCounter = 1;
+        private const int maxErrorCounter = 10;
         private async Task RunPeriodicCommandsAsync(CancellationToken ct)
         {
             AddToLog($"Panel saniyede 1 sorgulanıyor...");
@@ -121,14 +124,23 @@ namespace FireControlPanelPC
                     }
                     catch (Exception ex)
                     {
-                        AddToLog($"Command {command} hatası: {ex.Message}");
+                        AddToLog($"errorCounter: {errorCounter}/{maxErrorCounter}, Command {command} hatası: {ex.Message}");
+                        if (++errorCounter > maxErrorCounter) {
+                            errorCounter = 0;
+                            _periodicCommandsCts?.Cancel();
+                            var message = "Yangın alarm paneli ile iletişim kurulamadı!\nPanelin PC'ye bağlantısını kontrol edin ve bu programı kapatıp tekrar açın.";
+                            AddToLog(message);
+                            labelFireControlPanelConnection.BackColor = Color.Red;
+                            labelFireControlPanelConnection.Text = $"BAĞLANTI YOK";
+                            MessageBox.Show($"{message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
                 }
             }
         }
 
         private bool _isFormClosing;  // Track cleanup state
-        private bool _isSerialPortManagerDisposed;   // Track if we've already disposed
+        private bool _isSerialPortManagerDisposed; // Track if we've already disposed
         protected override async void OnFormClosing(FormClosingEventArgs e)
         {
             // Proceed with normal closing if:
