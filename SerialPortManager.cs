@@ -1,9 +1,19 @@
 ﻿using System.IO.Ports;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using Microsoft.Win32;
 
 namespace FireControlPanelPC
 {
+    [Flags]
+    public enum EXECUTION_STATE : uint
+    {
+        ES_SYSTEM_REQUIRED = 0x00000001,
+        ES_DISPLAY_REQUIRED = 0x00000002,
+        ES_CONTINUOUS = 0x80000000
+    }
+
     public class SerialPortManager : IDisposable
     {
         private SerialPort? _serialPort;
@@ -11,12 +21,25 @@ namespace FireControlPanelPC
         private readonly Action<string> _logCallback;
         private bool _disposed;
 
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
+
         public bool IsConnected => _serialPort?.IsOpen ?? false;
 
         public SerialPortManager(Action<string> logCallback)
         {
             _logCallback = logCallback;
             _faultAlarmCommandProcessor = new FaultAlarmCommandProcessor(logCallback);
+        }
+
+        private void PreventSleep()
+        {
+            SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_SYSTEM_REQUIRED);
+        }
+
+        private void AllowSleep()
+        {
+            SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS);
         }
 
         public string getPortName()
@@ -74,6 +97,8 @@ namespace FireControlPanelPC
         {
             if (_serialPort == null || !_serialPort.IsOpen)
                 throw new InvalidOperationException("Serial port is not ready");
+
+            PreventSleep();  // Prevent sleep before starting communication
 
             try
             {
@@ -149,6 +174,10 @@ namespace FireControlPanelPC
             {
                 throw new IOException($"Serial port {_serialPort.PortName} error: {ex.Message}", ex);
             }
+            finally
+            {
+                AllowSleep();  // Allow sleep after communication is done
+            }
         }
 
         public async ValueTask DisposeAsync()
@@ -184,39 +213,47 @@ namespace FireControlPanelPC
         {
             if (_faultAlarmCommandProcessor == null) throw new ArgumentNullException("_faultAlarmCommandProcessor == null");
 
-            byte lastCommand = 0;
-            byte[] lastResponse = [];
-
-            foreach (byte command in Constants.PERIODIC_COMMANDS_ORDER)
+            PreventSleep();  // Prevent sleep during periodic communication
+            try
             {
-                if (communicationCts.Token.IsCancellationRequested) break;
+                byte lastCommand = 0;
+                byte[] lastResponse = [];
+
+                foreach (byte command in Constants.PERIODIC_COMMANDS_ORDER)
+                {
+                    if (communicationCts.Token.IsCancellationRequested) break;
+
+                    try
+                    {
+                        var (responseBytes, bytesRead) = await SendCommandWithTimeoutAsync([command], 1);
+                        if (bytesRead > 0)
+                        {
+                            _faultAlarmCommandProcessor.ProcessResponse(command, responseBytes);
+                            lastCommand = command;
+                            lastResponse = responseBytes; // Store the response but don't return yet
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logCallback($"Command {command} execution error: {ex.Message}");
+                    }
+                }
 
                 try
                 {
-                    var (responseBytes, bytesRead) = await SendCommandWithTimeoutAsync([command], 1);
-                    if (bytesRead > 0)
-                    {
-                        _faultAlarmCommandProcessor.ProcessResponse(command, responseBytes);
-                        lastCommand = command;
-                        lastResponse = responseBytes; // Store the response but don't return yet
-                    }
+                    await Task.Delay(millisecondsDelay, communicationCts.Token);
                 }
-                catch (Exception ex)
+                catch (OperationCanceledException)
                 {
-                    _logCallback($"Command {command} execution error: {ex.Message}");
+                    return (0, []); // Return empty array if cancelled
                 }
-            }
 
-            try
-            {
-                await Task.Delay(millisecondsDelay, communicationCts.Token);
+                return (lastCommand, lastResponse); // Return the last valid response
             }
-            catch (OperationCanceledException)
+            finally
             {
-                return (0, []); // Return empty array if cancelled
+                AllowSleep();  // Allow sleep when periodic communication stops
             }
-
-            return (lastCommand, lastResponse); // Return the last valid response
         }
 
         public async Task<byte[]> GetZoneNamesAsync(int timeoutMs = 1000)

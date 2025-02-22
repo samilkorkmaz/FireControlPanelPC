@@ -101,8 +101,8 @@ namespace FireControlPanelPC
         }
 
 
-        private int errorCounter = 1;
-        private const int maxErrorCounter = 10;
+        private int consecutiveErrorCounter = 1;
+        private const int maxConsecutiveErrorCounter = 10;
         private async Task RunPeriodicCommandsAsync(CancellationToken ct)
         {
             AddToLog($"Panel saniyede 1 sorgulanıyor...");
@@ -118,15 +118,19 @@ namespace FireControlPanelPC
                         if (bytesRead > 0)
                         {
                             var responseFirstByte = responseBytes[0];
+                            consecutiveErrorCounter = 1;
                             UpdateUI(command, responseFirstByte);
+                        } else
+                        {
+                            consecutiveErrorCounter++;
                         }
                         await Task.Delay(_pollingPeriod_ms, ct); // Add delay after each command
                     }
                     catch (Exception ex)
                     {
-                        AddToLog($"errorCounter: {errorCounter}/{maxErrorCounter}, Command {command} hatası: {ex.Message}");
-                        if (++errorCounter > maxErrorCounter) {
-                            errorCounter = 0;
+                        AddToLog($"consecutiveErrorCounter: {consecutiveErrorCounter}/{maxConsecutiveErrorCounter}, Command {command} hatası: {ex.Message}");
+                        if (++consecutiveErrorCounter > maxConsecutiveErrorCounter) {
+                            consecutiveErrorCounter = 0;
                             _periodicCommandsCts?.Cancel();
                             var message = "Yangın alarm paneli ile iletişim kurulamadı!\nPanelin PC'ye bağlantısını kontrol edin ve bu programı kapatıp tekrar açın.";
                             AddToLog(message);

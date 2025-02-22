@@ -269,7 +269,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             Name = "FormUser";
-            Text = "NVS-Pointer Yangın Algılama ve İhbar Paneli - v1.1";
+            Text = "NVS-Pointer Yangın Algılama ve İhbar Paneli - v1.2";
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             groupBox1.ResumeLayout(false);
             groupBox2.ResumeLayout(false);
