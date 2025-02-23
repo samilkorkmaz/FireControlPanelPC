@@ -21,8 +21,8 @@ namespace FireControlPanelPC
         public FormUser()
         {
             InitializeComponent();
-            linkLabelNavelsan.Text = "©2025 navelsan\nhttps://navelsan.com.tr/";
-            linkLabelNavelsan.Links.Add(0, linkLabelNavelsan.Text.Length, "https://navelsan.com.tr/");
+            linkLabelNavelsan.Text = "©2025 navelsan\nhttps://navelsan.com.tr";
+            linkLabelNavelsan.Links.Add(0, linkLabelNavelsan.Text.Length, "https://navelsan.com.tr");
             linkLabelNavelsan.LinkClicked += (sender, e) =>
             {
                 if (e.Link?.LinkData != null)
